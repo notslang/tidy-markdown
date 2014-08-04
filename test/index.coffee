@@ -36,6 +36,37 @@ describe 'headings', ->
       ## test
     ''')
 
+  it 'should fix skips between header levels', ->
+    prettyMarkdown('''
+      ## test
+    ''').should.equal('''
+      # test
+    ''')
+
+    prettyMarkdown('''
+      # test
+      ### test
+      ### test
+    ''').should.equal('''
+      # test
+      ## test
+      ## test
+    ''')
+
+    prettyMarkdown('''
+      # test
+      ### test
+      #### test
+      ### test
+      #### test
+    ''').should.equal('''
+      # test
+      ## test
+      ### test
+      ## test
+      ### test
+    ''')
+
   it 'should strip trailing whitespace', ->
     prettyMarkdown('#test ').should.equal('# test')
 

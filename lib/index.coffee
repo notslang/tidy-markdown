@@ -19,13 +19,14 @@ module.exports = (dirtyMarkdown) ->
   out = []
   previousToken = ''
   ast = preprocessAST(ast)
+  ast = fixHeaders(ast)
   console.log JSON.stringify(ast, null, '  ')
 
   for token in ast
     token.indent ?= ''
     switch token.type
       when 'heading'
-        if previousToken isnt '' then out.push ''
+        if previousToken not in ['', 'heading'] then out.push ''
         out.push stringRepeat('#', token.depth) + ' ' + token.text
       when 'paragraph'
         if previousToken is 'paragraph' then out.push ''
@@ -130,3 +131,45 @@ preprocessAST = (ast) ->
 
     i++
   return out
+
+###*
+ * Some people accidently skip levels in their headers (like jumping from h1 to
+ * h3), which screws up things like tables of contents. This function fixes
+ * that.
+
+ * The algorithim assumes that relations between nearby headers are correct and
+ * will try to preserve them. For example, "h1, h3, h3" becomes "h1, h2, h2"
+ * rather than "h1, h2, h3".
+###
+fixHeaders = (ast) ->
+  i = 0
+  lastHeaderDepth = 0
+  while i < ast.length
+    if ast[i].type isnt 'heading'
+      # nothing
+    else if ast[i].depth <= lastHeaderDepth + 1
+      lastHeaderDepth = ast[i].depth
+    else
+      # find all the children of that header and cut them down by the amount in
+      # the gap between the offending header and the last good header. For
+      # example, a jump from h1 to h3 would be `gap = 1` and all headers
+      # directly following that h3 which are h3 or greater would need to be
+      # reduced by 1 level.
+      e = i
+      gap = ast[i].depth - (lastHeaderDepth + 1)
+      console.log gap
+      parentDepth = ast[i].depth
+      while e < ast.length
+        if ast[e].type isnt 'heading'
+          # nothing
+        else if ast[e].depth >= parentDepth
+          ast[e].depth -= gap
+        else
+          break
+        e++
+
+      # don't let it increment `i`. we need to get the offending header checked
+      # again so it sets the new `lastHeaderDepth`
+      continue
+    i++
+  return ast
