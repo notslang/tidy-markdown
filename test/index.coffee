@@ -4,17 +4,37 @@ fs = require 'fs'
 
 describe 'headings', ->
   it 'should fix spaces between heading and text', ->
-    prettyMarkdown('#test').should.equal('# test')
-    prettyMarkdown('##test').should.equal('## test')
-    prettyMarkdown('###test').should.equal('### test')
+    prettyMarkdown('''
+      #test
+      ##test
+      ###test
+    ''').should.equal('''
+      # test
+      ## test
+      ### test
+    ''')
 
-    prettyMarkdown('#test#').should.equal('# test')
-    prettyMarkdown('##test##').should.equal('## test')
-    prettyMarkdown('###test###').should.equal('### test')
+  it 'should fix atx-style headings', ->
+    prettyMarkdown('''
+      # test #
+      ## test ##
+      ### test ###
+    ''').should.equal('''
+      # test
+      ## test
+      ### test
+    ''')
 
-  it 'should convert underlined headings into normal ones', ->
-    prettyMarkdown('test\n====').should.equal('# test')
-    prettyMarkdown('test\n----').should.equal('## test')
+  it 'should fix underlined headings', ->
+    prettyMarkdown('''
+      test
+      ====
+      test
+      ----
+    ''').should.equal('''
+      # test
+      ## test
+    ''')
 
   it 'should strip trailing whitespace', ->
     prettyMarkdown('#test ').should.equal('# test')
