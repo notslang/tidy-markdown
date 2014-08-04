@@ -41,6 +41,7 @@ module.exports = (dirtyMarkdown) ->
 
 IMG_REGEX = /<img src="([^"]*)"(?: alt="([^"]*)")?(?: title="([^"]*)")?>/g
 LINK_REGEX = /<a href="([^"]*)"(?: title="([^"]*)")?>([^<]*)<\/a>/g
+CODE_REGEX = /<code>([^<]+)<\/code>/
 prettyInlineMarkdown = (token) ->
   token.text = marked
     .inlineLexer(token.text, token.links or {})
@@ -50,8 +51,20 @@ prettyInlineMarkdown = (token) ->
     .replace /\u2026/g, '...' # ellipses
     .replace /<\/?strong>/g, '**'
     .replace /<\/?em>/g, '_'
-    .replace /<\/?code>/g, '`'
     .replace /<\/?del>/g, '~~'
+    .replace CODE_REGEX, (m, code) ->
+      delimiter = '`'
+      while ///([^`]|^)#{delimiter}([^`]|$)///.test code
+        # make sure that the delimiter isn't being used inside of the text. if
+        # it is, we need to increase the number of times the delimiter is
+        # repeated.
+        delimiter += '`'
+
+      if code[0] is '`' then code = ' ' + code # add starting space
+      if code[-1...] is '`' then code += ' ' # add ending space
+      return delimiter + code + delimiter
+
+
     .replace IMG_REGEX, (m, url='', alt='', title) ->
       if title?
         url += " \"#{title.replace /\\|"/g, (m) -> "\\#{m}"}\""

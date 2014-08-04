@@ -102,6 +102,8 @@ describe 'inline grammar', ->
     prettyMarkdown('<code>code</code>').should.equal('`code`')
     prettyMarkdown('`code`').should.equal('`code`')
     prettyMarkdown('` code `').should.equal('`code`')
+    prettyMarkdown('```blah` ``').should.equal('`` `blah` ``')
+    prettyMarkdown('` ``blah`` `').should.equal('` ``blah`` `')
 
   it 'should handle strikethrough', ->
     prettyMarkdown('<del>code</del>').should.equal('~~code~~')
