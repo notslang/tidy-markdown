@@ -90,6 +90,10 @@ describe 'lists', ->
 
 
 describe 'inline grammar', ->
+  it 'should handle special characters', ->
+    prettyMarkdown('2 < 4').should.equal('2 < 4')
+    prettyMarkdown('5 > 4').should.equal('5 > 4')
+
   it 'should handle bold text', ->
     prettyMarkdown('**bold**').should.equal('**bold**')
     prettyMarkdown('__bold__').should.equal('**bold**')
