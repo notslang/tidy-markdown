@@ -14,6 +14,24 @@ htmlEntities = new Entities()
   return s;
 }`
 
+###*
+ * Wrap code with delimiters
+ * @param {[type]} code
+ * @param {[type]} delimiter The delimiter to start with, additional backticks
+   will be added if needed; like if the code contains a sequence of backticks
+   that would end the code block prematurely.
+###
+delimitCode = (code, delimiter) ->
+  while ///([^`]|^)#{delimiter}([^`]|$)///.test code
+    # make sure that the delimiter isn't being used inside of the text. if
+    # it is, we need to increase the number of times the delimiter is
+    # repeated.
+    delimiter += '`'
+
+  if code[0] is '`' then code = ' ' + code # add starting space
+  if code[-1...] is '`' then code += ' ' # add ending space
+  return delimiter + code + delimiter
+
 module.exports = (dirtyMarkdown) ->
   ast = marked.lexer(dirtyMarkdown)
   out = []
@@ -34,15 +52,15 @@ module.exports = (dirtyMarkdown) ->
       when 'text'
         out.push token.indent + prettyInlineMarkdown(token).text
       when 'code'
-        out.push "```#{token.lang}\n#{token.text}\n```\n"
+        token.lang ?= ''
+        out.push delimitCode("#{token.lang}\n#{token.text}\n", '```'), ''
 
     previousToken = token.type
-
   return out.join('\n')
 
 IMG_REGEX = /<img src="([^"]*)"(?: alt="([^"]*)")?(?: title="([^"]*)")?>/g
 LINK_REGEX = /<a href="([^"]*)"(?: title="([^"]*)")?>([^<]*)<\/a>/g
-CODE_REGEX = /<code>([^<]+)<\/code>/
+CODE_REGEX = /<code>([^<]+)<\/code>/g
 prettyInlineMarkdown = (token) ->
   token.text = marked
     .inlineLexer(token.text, token.links or {})
@@ -53,19 +71,7 @@ prettyInlineMarkdown = (token) ->
     .replace /<\/?strong>/g, '**'
     .replace /<\/?em>/g, '_'
     .replace /<\/?del>/g, '~~'
-    .replace CODE_REGEX, (m, code) ->
-      delimiter = '`'
-      while ///([^`]|^)#{delimiter}([^`]|$)///.test code
-        # make sure that the delimiter isn't being used inside of the text. if
-        # it is, we need to increase the number of times the delimiter is
-        # repeated.
-        delimiter += '`'
-
-      if code[0] is '`' then code = ' ' + code # add starting space
-      if code[-1...] is '`' then code += ' ' # add ending space
-      return delimiter + code + delimiter
-
-
+    .replace CODE_REGEX, (m, code) -> delimitCode(code, '`')
     .replace IMG_REGEX, (m, url='', alt='', title) ->
       if title?
         url += " \"#{title.replace /\\|"/g, (m) -> "\\#{m}"}\""
@@ -125,7 +131,6 @@ preprocessAST = (ast) ->
         else
           token.indent = '  ' + token.indent
         out.push token
-
     else
       out.push currentToken
 
@@ -157,7 +162,6 @@ fixHeaders = (ast) ->
       # reduced by 1 level.
       e = i
       gap = ast[i].depth - (lastHeaderDepth + 1)
-      console.log gap
       parentDepth = ast[i].depth
       while e < ast.length
         if ast[e].type isnt 'heading'

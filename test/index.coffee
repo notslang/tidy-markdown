@@ -191,10 +191,10 @@ describe 'inline grammar', ->
     prettyMarkdown('<span>blag</span>').should.equal('<span>blag</span>')
 
 describe 'full documents', ->
-  it.skip 'should reformat to match expected', ->
+  it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
       fs.writeFileSync(
-        "./test/cases/2#{file}"
+        "./test/out.md"
         prettyMarkdown(
           fs.readFileSync("./test/cases/#{file}", encoding: 'utf8')
         )
