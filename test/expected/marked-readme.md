@@ -4,7 +4,7 @@
 [![NPM version](https://badge.fury.io/js/marked.png)][badge]
 
 ## Install
-``` bash
+```bash
 npm install marked --save
 ```
 
@@ -49,9 +49,7 @@ Hash of options. Can also be set using the `marked.setOptions` method as seen ab
 ### callback
 Type: `function`
 
-Function called when the `markdownString` has been fully parsed when using
-async highlighting. If the `options` argument is omitted, this can be used as
-the second argument.
+Function called when the `markdownString` has been fully parsed when using async highlighting. If the `options` argument is omitted, this can be used as the second argument.
 
 ## Options
 ### highlight
@@ -183,20 +181,17 @@ Enable [GitHub flavored markdown][gfm].
 ### tables
 Type: `boolean` Default: `true`
 
-Enable GFM [tables][tables].
-This option requires the `gfm` option to be true.
+Enable GFM [tables][tables]. This option requires the `gfm` option to be true.
 
 ### breaks
 Type: `boolean` Default: `false`
 
-Enable GFM [line breaks][breaks].
-This option requires the `gfm` option to be true.
+Enable GFM [line breaks][breaks]. This option requires the `gfm` option to be true.
 
 ### pedantic
 Type: `boolean` Default: `false`
 
-Conform to obscure parts of `markdown.pl` as much as possible. Don't fix any of
-the original markdown bugs or poor behavior.
+Conform to obscure parts of `markdown.pl` as much as possible. Don't fix any of the original markdown bugs or poor behavior.
 
 ### sanitize
 Type: `boolean` Default: `false`
@@ -216,12 +211,12 @@ Use "smart" typograhic punctuation for things like quotes and dashes.
 ## Access to lexer and parser
 You also have direct access to the lexer and parser if you so desire.
 
-``` js
+```js
 var tokens = marked.lexer(text, options);
 console.log(marked.parser(tokens));
 ```
 
-``` js
+```js
 var lexer = new marked.Lexer(options);
 var tokens = lexer.lex(text);
 console.log(tokens);
@@ -229,7 +224,7 @@ console.log(lexer.rules);
 ```
 
 ## CLI
-``` bash
+```bash
 $ marked -o hello.html
 hello world
 ^D
@@ -238,22 +233,18 @@ $ cat hello.html
 ```
 
 ## Philosophy behind marked
-The point of marked was to create a markdown compiler where it was possible to
-frequently parse huge chunks of markdown without having to worry about
-caching the compiled output somehow...or blocking for an unnecesarily long time.
+The point of marked was to create a markdown compiler where it was possible to frequently parse huge chunks of markdown without having to worry about caching the compiled output somehow...or blocking for an unnecesarily long time.
 
-marked is very concise and still implements all markdown features. It is also
-now fully compatible with the client-side.
+marked is very concise and still implements all markdown features. It is also now fully compatible with the client-side.
 
 marked more or less passes the official markdown test suite in its entirety. This is important because a surprising number of markdown compilers cannot pass more than a few tests. It was very difficult to get marked as compliant as it is. It could have cut corners in several areas for the sake of performance, but did not in order to be exactly what you expect in terms of a markdown rendering. In fact, this is why marked could be considered at a disadvantage in the benchmarks above.
 
-Along with implementing every markdown feature, marked also implements [GFM
-features][gfmf].
+Along with implementing every markdown feature, marked also implements [GFM features][gfmf].
 
 ## Benchmarks
 node v0.8.x
 
-``` bash
+```bash
 $ node test --bench
 marked completed in 3411ms.
 marked (gfm) completed in 3727ms.
@@ -302,7 +293,7 @@ In other words, if you have a test to add, add it to `test/new/` and then regene
 
 To run the tests:
 
-``` bash
+```bash
 cd marked/
 node test
 ```
