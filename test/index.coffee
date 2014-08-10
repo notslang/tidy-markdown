@@ -136,6 +136,7 @@ describe 'lists', ->
         - sub-list item
         - sub-list another item
         - sub-list last item
+
       - last item
     ''')
 
