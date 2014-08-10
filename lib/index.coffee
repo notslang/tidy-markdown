@@ -105,16 +105,16 @@ preprocessAST = (ast) ->
 
       # if other nestingStartTokens of the same type open while looking for the
       # end of this subAST, make sure not to steal their nestingEndToken
-      nestingLevel = 0
+      nestingLevel = 1
       subAST = []
       loop
         if ast[i].type is nestingEndToken
-          if nestingLevel is 0
-            break
-          else
-            nestingLevel--
-        else if ast[i].type is nestingStartToken
+          nestingLevel--
+        if ast[i].type is nestingStartToken
           nestingLevel++
+
+        if nestingLevel is 0
+          break
 
         subAST.push ast[i]
         i++
