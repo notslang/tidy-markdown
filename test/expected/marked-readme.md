@@ -4,6 +4,7 @@
 [![NPM version](https://badge.fury.io/js/marked.png)][badge]
 
 ## Install
+
 ```bash
 npm install marked --save
 ```
@@ -57,7 +58,7 @@ Type: `function`
 
 A function to highlight code blocks. The first example below uses async highlighting with [node-pygmentize-bundled][pygmentize], and the second is a synchronous example using [highlight.js][highlight]:
 
-```js
+````js
 var marked = require('marked');
 
 var markdownString = '```js\n console.log("hello"); \n```';
@@ -85,7 +86,7 @@ marked.setOptions({
 });
 
 console.log(marked(markdownString));
-```
+````
 
 #### highlight arguments
 `code`
@@ -107,8 +108,7 @@ Type: `function`
 The callback function to call when using an async highlighter.
 
 ### renderer
-Type: `object`
-Default: `new Renderer()`
+Type: `object` Default: `new Renderer()`
 
 An object containing functions to render tokens to HTML.
 
@@ -132,7 +132,9 @@ renderer.heading = function (text, level) {
 
 console.log(marked('# heading+', { renderer: renderer }));
 ```
+
 This code will output the following HTML:
+
 ```html
 <h1>
   <a name="heading-" class="anchor" href="#heading-">
@@ -224,6 +226,7 @@ console.log(lexer.rules);
 ```
 
 ## CLI
+
 ```bash
 $ marked -o hello.html
 hello world
