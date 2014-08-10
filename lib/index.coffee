@@ -48,7 +48,7 @@ module.exports = (dirtyMarkdown) ->
         out.push stringRepeat('#', token.depth) + ' ' + token.text
       when 'paragraph'
         if previousToken is 'paragraph' then out.push ''
-        out.push token.indent + prettyInlineMarkdown(token).text.replace /\n/, ' '
+        out.push token.indent + prettyInlineMarkdown(token).text.replace /\n/g, ' '
       when 'text'
         out.push token.indent + prettyInlineMarkdown(token).text
       when 'code'
