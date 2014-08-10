@@ -1,5 +1,6 @@
 marked = require 'marked'
 Entities = require('html-entities').AllHtmlEntities
+indent = require 'indent'
 
 htmlEntities = new Entities()
 
@@ -35,25 +36,51 @@ delimitCode = (code, delimiter) ->
 module.exports = (dirtyMarkdown) ->
   ast = marked.lexer(dirtyMarkdown)
   out = []
-  previousToken = ''
+  previousToken = undefined
+
+  # remove all the `space` and `list_end` tokens - they're useless
+  ast = ast.filter (token) -> token.type not in ['space', 'list_end']
+
+  # there is no `loose_item_end` token, so we need to make it. thankfully, it's
+  # pretty easy to determin where they go, by finding `list_item_end` whereever
+  # there's an unclosed `loose_item`
+  openLooseItem = false
+  ast = ast.map (val, i, array) ->
+    if val.type is 'loose_item_start'
+      openLooseItem = true
+    else if val.type is 'list_item_end' and openLooseItem
+      openLooseItem = false
+      # replace the list_item_end with loose_item_end
+      val = type: 'loose_item_end'
+    return val
+
   ast = preprocessAST(ast)
   ast = fixHeaders(ast)
-  console.log JSON.stringify(ast, null, '  ')
 
   for token in ast
     token.indent ?= ''
+    token.nesting ?= []
     switch token.type
       when 'heading'
-        if previousToken not in ['', 'heading'] then out.push ''
+        if previousToken? and previousToken.type isnt 'heading' then out.push ''
         out.push stringRepeat('#', token.depth) + ' ' + token.text
       when 'paragraph'
-        if previousToken is 'paragraph' then out.push ''
+        if previousToken?.type in ['paragraph', 'list_item'] then out.push ''
         out.push token.indent + prettyInlineMarkdown(token).text.replace /\n/g, ' '
-      when 'text'
+      when 'text', 'list_item'
+        if previousToken? and token.type is 'list_item' and
+           (previousToken.nesting.length > token.nesting.length or
+           (previousToken.type is 'paragraph' and
+           previousToken.nesting?.length >= token.nesting.length))
+
+          out.push ''
         out.push token.indent + prettyInlineMarkdown(token).text
       when 'code'
         token.lang ?= ''
-        out.push delimitCode("#{token.lang}\n#{token.text}\n", '```'), ''
+        token.text = delimitCode("#{token.lang}\n#{token.text}\n", '```')
+        out.push '', indent(token.text, token.indent), ''
+
+    previousToken = token
 
   # filter multiple sequential linebreaks
   out = out.filter (val, i, arr) -> not (val is '' and arr[i - 1] is '')
@@ -85,18 +112,19 @@ prettyInlineMarkdown = (token) ->
   token.text = htmlEntities.decode(token.text)
   return token
 
-nestingStartTokens = ['list_item_start', 'blockquote_start']
-nestingEndTokens = ['list_item_end', 'blockquote_end']
-nestContainingTokens = ['list_item', 'blockquote']
-skippedTokens = ['list_start', 'list_end']
+nestingStartTokens = ['list_item_start', 'blockquote_start', 'loose_item_start']
+nestingEndTokens = ['list_item_end', 'blockquote_end', 'loose_item_end']
+nestContainingTokens = ['list_item', 'blockquote', 'loose_item']
 preprocessAST = (ast) ->
-  # preprocess ast
   i = 0
   out = []
+  orderedList = false
+  orderedListItemNumber = 0
   while i < ast.length
     currentToken = ast[i]
-    if currentToken.type in skippedTokens
-      # do nothing
+    if currentToken.type is 'list_start'
+      # this is actually all we need the list start token for
+      orderedList = currentToken.ordered
     else if currentToken.type in nestingStartTokens
       nestingStartToken = currentToken.type
       tokenIndex = nestingStartTokens.indexOf(nestingStartToken)
@@ -119,6 +147,8 @@ preprocessAST = (ast) ->
 
         subAST.push ast[i]
         i++
+
+      e = 0
       for token in preprocessAST(subAST)
         token.nesting ?= []
         token.indent ?= ''
@@ -128,9 +158,25 @@ preprocessAST = (ast) ->
         else if currentToken.type is 'blockquote'
           token.indent += '> '
         else if currentToken.type is 'list_item'
+          token.type = 'list_item'
+          if orderedList
+            orderedListItemNumber++
+            token.indent += "#{orderedListItemNumber}. "
+          else
+            token.indent += '- '
+        else if e is 0 and token.type is 'text' and
+                currentToken.type is 'loose_item'
+          token.type = 'list_item'
           token.indent += '- '
         else
           token.indent = '  ' + token.indent
+
+        if token.type is 'text' and currentToken.type is 'loose_item'
+          # text inside of a loose item is actually a `paragraph`... the ast
+          # just calls it `text`
+          token.type = 'paragraph'
+
+        e++
         out.push token
     else
       out.push currentToken
