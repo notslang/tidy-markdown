@@ -65,7 +65,8 @@ module.exports = (dirtyMarkdown) ->
         if previousToken? and previousToken.type isnt 'heading' then out.push ''
         out.push stringRepeat('#', token.depth) + ' ' + token.text
       when 'paragraph'
-        if previousToken?.type in ['paragraph', 'list_item'] then out.push ''
+        if previousToken?.type in ['paragraph', 'list_item', 'text']
+          out.push ''
         out.push token.indent + prettyInlineMarkdown(token).text.replace /\n/g, ' '
       when 'text', 'list_item'
         if previousToken? and token.type is 'list_item' and
