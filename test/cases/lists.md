@@ -40,3 +40,9 @@ this is a paragraph after the list
 
 2. two
 1. three
+  > this is a blockquote in the list
+2. two
+1. three
+  > this is a blockquote ending the list
+
+> this is a blockquote after the list
