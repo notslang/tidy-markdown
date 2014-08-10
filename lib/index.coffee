@@ -45,14 +45,14 @@ module.exports = (dirtyMarkdown) ->
   # pretty easy to determin where they go, by finding `list_item_end` whereever
   # there's an unclosed `loose_item`
   openLooseItem = false
-  ast = ast.map (val, i, array) ->
-    if val.type is 'loose_item_start'
+  ast = ast.map (token) ->
+    if token.type is 'loose_item_start'
       openLooseItem = true
-    else if val.type is 'list_item_end' and openLooseItem
+    else if token.type is 'list_item_end' and openLooseItem
       openLooseItem = false
       # replace the list_item_end with loose_item_end
-      val = type: 'loose_item_end'
-    return val
+      token = type: 'loose_item_end'
+    return token
 
   ast = preprocessAST(ast)
   ast = fixHeaders(ast)
