@@ -55,7 +55,8 @@ module.exports = (dirtyMarkdown) ->
         token.lang ?= ''
         out.push delimitCode("#{token.lang}\n#{token.text}\n", '```'), ''
 
-    previousToken = token.type
+  # filter multiple sequential linebreaks
+  out = out.filter (val, i, arr) -> not (val is '' and arr[i - 1] is '')
   return out.join('\n')
 
 IMG_REGEX = /<img src="([^"]*)"(?: alt="([^"]*)")?(?: title="([^"]*)")?>/g
