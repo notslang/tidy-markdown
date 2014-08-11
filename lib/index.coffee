@@ -33,60 +33,6 @@ delimitCode = (code, delimiter) ->
   if code[-1...] is '`' then code += ' ' # add ending space
   return delimiter + code + delimiter
 
-module.exports = (dirtyMarkdown) ->
-  ast = marked.lexer(dirtyMarkdown)
-  out = []
-  previousToken = undefined
-
-  # remove all the `space` and `list_end` tokens - they're useless
-  ast = ast.filter (token) -> token.type not in ['space', 'list_end']
-
-  # there is no `loose_item_end` token, so we need to make it. thankfully, it's
-  # pretty easy to determin where they go, by finding `list_item_end` whereever
-  # there's an unclosed `loose_item`
-  openLooseItem = false
-  ast = ast.map (token) ->
-    if token.type is 'loose_item_start'
-      openLooseItem = true
-    else if token.type is 'list_item_end' and openLooseItem
-      openLooseItem = false
-      # replace the list_item_end with loose_item_end
-      token = type: 'loose_item_end'
-    return token
-
-  ast = preprocessAST(ast)
-  ast = fixHeaders(ast)
-
-  for token in ast
-    token.indent ?= ''
-    token.nesting ?= []
-    switch token.type
-      when 'heading'
-        if previousToken? and previousToken.type isnt 'heading' then out.push ''
-        out.push stringRepeat('#', token.depth) + ' ' + token.text
-      when 'paragraph'
-        if previousToken?.type in ['paragraph', 'list_item', 'text']
-          out.push ''
-        out.push token.indent + prettyInlineMarkdown(token).text.replace /\n/g, ' '
-      when 'text', 'list_item'
-        if previousToken? and token.type is 'list_item' and
-           (previousToken.nesting.length > token.nesting.length or
-           (previousToken.type is 'paragraph' and
-           previousToken.nesting?.length >= token.nesting.length))
-
-          out.push ''
-        out.push token.indent + prettyInlineMarkdown(token).text
-      when 'code'
-        token.lang ?= ''
-        token.text = delimitCode("#{token.lang}\n#{token.text}\n", '```')
-        out.push '', indent(token.text, token.indent), ''
-
-    previousToken = token
-
-  # filter multiple sequential linebreaks
-  out = out.filter (val, i, arr) -> not (val is '' and arr[i - 1] is '')
-  return out.join('\n')
-
 IMG_REGEX = /<img src="([^"]*)"(?: alt="([^"]*)")?(?: title="([^"]*)")?>/g
 LINK_REGEX = /<a href="([^"]*)"(?: title="([^"]*)")?>([^<]*)<\/a>/g
 CODE_REGEX = /<code>([^<]+)<\/code>/g
@@ -225,3 +171,57 @@ fixHeaders = (ast) ->
       continue
     i++
   return ast
+
+module.exports = (dirtyMarkdown) ->
+  ast = marked.lexer(dirtyMarkdown)
+  out = []
+  previousToken = undefined
+
+  # remove all the `space` and `list_end` tokens - they're useless
+  ast = ast.filter (token) -> token.type not in ['space', 'list_end']
+
+  # there is no `loose_item_end` token, so we need to make it. thankfully, it's
+  # pretty easy to determin where they go, by finding `list_item_end` whereever
+  # there's an unclosed `loose_item`
+  openLooseItem = false
+  ast = ast.map (token) ->
+    if token.type is 'loose_item_start'
+      openLooseItem = true
+    else if token.type is 'list_item_end' and openLooseItem
+      openLooseItem = false
+      # replace the list_item_end with loose_item_end
+      token = type: 'loose_item_end'
+    return token
+
+  ast = preprocessAST(ast)
+  ast = fixHeaders(ast)
+
+  for token in ast
+    token.indent ?= ''
+    token.nesting ?= []
+    switch token.type
+      when 'heading'
+        if previousToken? and previousToken.type isnt 'heading' then out.push ''
+        out.push stringRepeat('#', token.depth) + ' ' + token.text
+      when 'paragraph'
+        if previousToken?.type in ['paragraph', 'list_item', 'text']
+          out.push ''
+        out.push token.indent + prettyInlineMarkdown(token).text.replace /\n/g, ' '
+      when 'text', 'list_item'
+        if previousToken? and token.type is 'list_item' and
+           (previousToken.nesting.length > token.nesting.length or
+           (previousToken.type is 'paragraph' and
+           previousToken.nesting?.length >= token.nesting.length))
+
+          out.push ''
+        out.push token.indent + prettyInlineMarkdown(token).text
+      when 'code'
+        token.lang ?= ''
+        token.text = delimitCode("#{token.lang}\n#{token.text}\n", '```')
+        out.push '', indent(token.text, token.indent), ''
+
+    previousToken = token
+
+  # filter multiple sequential linebreaks
+  out = out.filter (val, i, arr) -> not (val is '' and arr[i - 1] is '')
+  return out.join('\n')
