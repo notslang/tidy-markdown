@@ -194,12 +194,6 @@ describe 'inline grammar', ->
 describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
-      fs.writeFileSync(
-        "./test/out.md"
-        prettyMarkdown(
-          fs.readFileSync("./test/cases/#{file}", encoding: 'utf8')
-        )
-      )
       try
         prettyMarkdown(
           fs.readFileSync("./test/cases/#{file}", encoding: 'utf8')
