@@ -174,6 +174,10 @@ fixHeaders = (ast) ->
 
 module.exports = (dirtyMarkdown) ->
   ast = marked.lexer(dirtyMarkdown)
+
+  # see issue: https://github.com/chjj/marked/issues/472
+  links = ast.links
+
   out = []
   previousToken = undefined
 
@@ -181,7 +185,7 @@ module.exports = (dirtyMarkdown) ->
   ast = ast.filter (token) -> token.type not in ['space', 'list_end']
 
   # there is no `loose_item_end` token, so we need to make it. thankfully, it's
-  # pretty easy to determin where they go, by finding `list_item_end` whereever
+  # pretty easy to determine where they go, by finding `list_item_end` wherever
   # there's an unclosed `loose_item`
   openLooseItem = false
   ast = ast.map (token) ->
@@ -221,6 +225,11 @@ module.exports = (dirtyMarkdown) ->
         out.push '', indent(token.text, token.indent), ''
 
     previousToken = token
+
+  if Object.keys(links).length > 0 then out.push ''
+  for id, link of links
+    optionalTitle = if link.title then " \"#{link.title}\"" else ''
+    out.push "[#{id}]: #{link.href}#{optionalTitle}"
 
   # filter multiple sequential linebreaks
   out = out.filter (val, i, arr) -> not (val is '' and arr[i - 1] is '')
