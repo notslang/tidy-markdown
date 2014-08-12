@@ -1,6 +1,7 @@
 marked = require 'marked'
 Entities = require('html-entities').AllHtmlEntities
 indent = require 'indent'
+pad = require 'pad'
 
 htmlEntities = new Entities()
 
@@ -14,6 +15,17 @@ htmlEntities = new Entities()
   }
   return s;
 }`
+
+###*
+ * Find the length of the longest string in an array
+ * @param {String[]} array Array of strings
+###
+longestStringInArray = (array) ->
+  longest = 0
+  for str in array
+    len = str.length
+    if len > longest then longest = len
+  return longest
 
 ###*
  * Wrap code with delimiters
@@ -223,6 +235,28 @@ module.exports = (dirtyMarkdown) ->
         token.lang ?= ''
         token.text = delimitCode("#{token.lang}\n#{token.text}\n", '```')
         out.push '', indent(token.text, token.indent), ''
+      when 'table'
+        if previousToken? then out.push ''
+        for i in [0...token.header.length]
+          col = [token.header[i]]
+          for j in [0...token.cells.length]
+            col.push token.cells[j][i]
+
+          colWidth = longestStringInArray(col)
+          token.header[i] = pad(token.header[i], colWidth)
+
+          #TODO: add support for non-left align
+          token.align[i] = pad('', colWidth, '-')
+
+          for j in [0...token.cells.length]
+            token.cells[j][i] = pad(token.cells[j][i], colWidth)
+
+        out.push token.header.join(' | ')
+        out.push token.align.join(' | ')
+        for row in token.cells
+          out.push row.join(' | ').trim() # no trailing whitespace
+
+
 
     previousToken = token
 

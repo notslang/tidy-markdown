@@ -6,7 +6,8 @@
   "dependencies": {
     "html-entities": "^1.0.10",
     "indent": "0.0.1",
-    "marked": "^0.3.2"
+    "marked": "^0.3.2",
+    "pad": "0.0.5"
   },
   "devDependencies": {
     "should": "^4.0.4"

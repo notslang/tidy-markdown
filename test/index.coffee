@@ -191,6 +191,22 @@ describe 'inline grammar', ->
   it 'should allow inline html to pass through', ->
     prettyMarkdown('<span>blag</span>').should.equal('<span>blag</span>')
 
+describe 'tables', ->
+  it 'should handle tables', ->
+    prettyMarkdown('''
+      Group                     | Domain          | First Appearance
+      ------------------------- | --------------- | ----------------
+      ShinRa                    | Mako Reactors   | FFVII
+      Moogles                   | MogNet          | FFIII
+      Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+    ''').should.equal('''
+      Group                     | Domain          | First Appearance
+      ------------------------- | --------------- | ----------------
+      ShinRa                    | Mako Reactors   | FFVII
+      Moogles                   | MogNet          | FFIII
+      Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+    ''')
+
 describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
