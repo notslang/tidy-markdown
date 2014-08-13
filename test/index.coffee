@@ -1,10 +1,10 @@
 should = require 'should'
-prettyMarkdown = require '../lib'
+tidyMarkdown = require '../lib'
 fs = require 'fs'
 
 describe 'headings', ->
   it 'should fix spaces between heading and text', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
       #test
       ##test
       ###test
@@ -15,7 +15,7 @@ describe 'headings', ->
     ''')
 
   it 'should fix atx-style headings', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
       # test #
       ## test ##
       ### test ###
@@ -26,7 +26,7 @@ describe 'headings', ->
     ''')
 
   it 'should fix underlined headings', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
       test
       ====
       test
@@ -37,13 +37,13 @@ describe 'headings', ->
     ''')
 
   it 'should fix skips between header levels', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
       ## test
     ''').should.equal('''
       # test
     ''')
 
-    prettyMarkdown('''
+    tidyMarkdown('''
       # test
       ### test
       ### test
@@ -53,7 +53,7 @@ describe 'headings', ->
       ## test
     ''')
 
-    prettyMarkdown('''
+    tidyMarkdown('''
       # test
       ### test
       #### test
@@ -68,15 +68,15 @@ describe 'headings', ->
     ''')
 
   it 'should strip trailing whitespace', ->
-    prettyMarkdown('#test ').should.equal('# test')
+    tidyMarkdown('#test ').should.equal('# test')
 
 describe 'paragraphs', ->
   it 'should get rid of mid-paragraph linebreaks', ->
-    prettyMarkdown('Lorem ipsum dolor adipiscing\nquis massa lorem')
+    tidyMarkdown('Lorem ipsum dolor adipiscing\nquis massa lorem')
       .should.equal('Lorem ipsum dolor adipiscing quis massa lorem')
 
   it 'should only separate paragraphs with one blank line', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
       Lorem ipsum dolor adipiscing
 
 
@@ -89,7 +89,7 @@ describe 'paragraphs', ->
 
 describe 'blockquotes', ->
   it 'should normalize blockquotes', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
       > blockquote with two paragraphs
       > consectetuer adipiscing
       >
@@ -103,7 +103,7 @@ describe 'blockquotes', ->
 
 describe 'lists', ->
   it 'should normalize unordered lists', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
        * item
        * another item
        * last item
@@ -112,7 +112,7 @@ describe 'lists', ->
       - another item
       - last item
     ''')
-    prettyMarkdown('''
+    tidyMarkdown('''
        + item
        + another item
        + last item
@@ -123,7 +123,7 @@ describe 'lists', ->
     ''')
 
   it 'should normalize unordered nested lists', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
        - item
        - another item
          - sub-list item
@@ -143,57 +143,57 @@ describe 'lists', ->
 
 describe 'inline grammar', ->
   it 'should handle special characters', ->
-    prettyMarkdown('2 < 4').should.equal('2 < 4')
-    prettyMarkdown('5 > 4').should.equal('5 > 4')
+    tidyMarkdown('2 < 4').should.equal('2 < 4')
+    tidyMarkdown('5 > 4').should.equal('5 > 4')
 
   it 'should handle bold text', ->
-    prettyMarkdown('**bold**').should.equal('**bold**')
-    prettyMarkdown('__bold__').should.equal('**bold**')
+    tidyMarkdown('**bold**').should.equal('**bold**')
+    tidyMarkdown('__bold__').should.equal('**bold**')
 
   it 'should handle italic text', ->
-    prettyMarkdown('*italic*').should.equal('_italic_')
-    prettyMarkdown('_italic_').should.equal('_italic_')
+    tidyMarkdown('*italic*').should.equal('_italic_')
+    tidyMarkdown('_italic_').should.equal('_italic_')
 
   it 'should handle code', ->
-    prettyMarkdown('<code>code</code>').should.equal('`code`')
-    prettyMarkdown('`code`').should.equal('`code`')
-    prettyMarkdown('` code `').should.equal('`code`')
-    prettyMarkdown('```blah` ``').should.equal('`` `blah` ``')
-    prettyMarkdown('` ``blah`` `').should.equal('` ``blah`` `')
+    tidyMarkdown('<code>code</code>').should.equal('`code`')
+    tidyMarkdown('`code`').should.equal('`code`')
+    tidyMarkdown('` code `').should.equal('`code`')
+    tidyMarkdown('```blah` ``').should.equal('`` `blah` ``')
+    tidyMarkdown('` ``blah`` `').should.equal('` ``blah`` `')
 
   it 'should handle strikethrough', ->
-    prettyMarkdown('<del>code</del>').should.equal('~~code~~')
-    prettyMarkdown('~~code~~').should.equal('~~code~~')
+    tidyMarkdown('<del>code</del>').should.equal('~~code~~')
+    tidyMarkdown('~~code~~').should.equal('~~code~~')
 
   it 'should handle links', ->
-    prettyMarkdown('[text](#anchor)').should.equal('[text](#anchor)')
-    prettyMarkdown('[text]( #anchor )').should.equal('[text](#anchor)')
-    prettyMarkdown('[](#anchor)').should.equal('[](#anchor)')
-    prettyMarkdown('[]()').should.equal('[]()')
-    prettyMarkdown('[](#anchor "Title")').should.equal('[](#anchor "Title")')
+    tidyMarkdown('[text](#anchor)').should.equal('[text](#anchor)')
+    tidyMarkdown('[text]( #anchor )').should.equal('[text](#anchor)')
+    tidyMarkdown('[](#anchor)').should.equal('[](#anchor)')
+    tidyMarkdown('[]()').should.equal('[]()')
+    tidyMarkdown('[](#anchor "Title")').should.equal('[](#anchor "Title")')
 
   it 'should handle images', ->
-    prettyMarkdown('![text](image.jpg)').should.equal('![text](image.jpg)')
-    prettyMarkdown('![text]( image.jpg )').should.equal('![text](image.jpg)')
-    prettyMarkdown('![]()').should.equal('![]()')
-    prettyMarkdown('![]("")').should.equal('![]("")')
-    prettyMarkdown(
+    tidyMarkdown('![text](image.jpg)').should.equal('![text](image.jpg)')
+    tidyMarkdown('![text]( image.jpg )').should.equal('![text](image.jpg)')
+    tidyMarkdown('![]()').should.equal('![]()')
+    tidyMarkdown('![]("")').should.equal('![]("")')
+    tidyMarkdown(
       '![alt text](/path/to/img.jpg "Title")'
     ).should.equal(
       '![alt text](/path/to/img.jpg "Title")'
     )
-    prettyMarkdown(
+    tidyMarkdown(
       '[![text]( image.jpg )]( #anchor )'
     ).should.equal(
       '[![text](image.jpg)](#anchor)'
     )
 
   it 'should allow inline html to pass through', ->
-    prettyMarkdown('<span>blag</span>').should.equal('<span>blag</span>')
+    tidyMarkdown('<span>blag</span>').should.equal('<span>blag</span>')
 
 describe 'tables', ->
   it 'should handle tables', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
       Group                     | Domain          | First Appearance
       ------------------------- | --------------- | ----------------
       ShinRa                    | Mako Reactors   | FFVII
@@ -208,7 +208,7 @@ describe 'tables', ->
     ''')
 
   it 'should handle tables with text alignment', ->
-    prettyMarkdown('''
+    tidyMarkdown('''
       Group                     | Domain          | First Appearance
       ------------------------: | :-------------: | :---------------
       ShinRa                    | Mako Reactors   | FFVII
@@ -226,7 +226,7 @@ describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
       try
-        prettyMarkdown(
+        tidyMarkdown(
           fs.readFileSync("./test/cases/#{file}", encoding: 'utf8')
         ).trim().should.equal(
           fs.readFileSync("./test/expected/#{file}", encoding: 'utf8').trim()
