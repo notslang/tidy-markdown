@@ -1,4 +1,8 @@
 # Tidy Markdown
+[![Build Status](http://img.shields.io/travis/slang800/tidy-markdown.svg?style=flat-square)](https://travis-ci.org/slang800/tidy-markdown)
+[![NPM version](http://img.shields.io/npm/v/tidy-markdown.svg?style=flat-square)](https://www.npmjs.org/package/tidy-markdown)
+[![NPM license](http://img.shields.io/npm/l/tidy-markdown.svg?style=flat-square)](https://www.npmjs.org/package/tidy-markdown)
+
 Beautify Markdown, fixing formatting mistakes and converting basic HTML & Unicode into their Markdown equilivants. Based on the conventions in [Carrot Creative's Markdown Styleguide](https://github.com/carrot/markdown-styleguide) and built on [Marked](https://github.com/chjj/marked).
 
 ## Features
