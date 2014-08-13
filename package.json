@@ -1,8 +1,8 @@
 {
   "name": "tidy-markdown",
-  "version": "0.0.0",
   "description": "fix ugly markdown.",
-  "main": "lib",
+  "version": "0.0.0",
+  "author": "Sean Lang",
   "dependencies": {
     "html-entities": "^1.0.10",
     "indent": "0.0.1",
@@ -12,9 +12,6 @@
   "devDependencies": {
     "should": "^4.0.4"
   },
-  "scripts": {
-    "test": "mocha"
-  },
   "keywords": [
     "pretty",
     "markdown",
@@ -22,6 +19,9 @@
     "parse",
     "styleguide"
   ],
-  "author": "Sean Lang",
-  "license": "GPLv3"
+  "license": "GPLv3",
+  "main": "lib",
+  "scripts": {
+    "test": "mocha"
+  }
 }
