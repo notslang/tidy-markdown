@@ -5,6 +5,34 @@
 
 Beautify Markdown, fixing formatting mistakes and converting basic HTML & Unicode into their Markdown equilivants. Based on the conventions in [Carrot Creative's Markdown Styleguide](https://github.com/carrot/markdown-styleguide) and built on [Marked](https://github.com/chjj/marked).
 
+## API
+Tidy Markdown only exports one function, that takes one argument (the string of ugly markdown). Here's an example of how it can be used:
+
+```coffee
+tidyMarkdown = require 'tidy-markdown'
+
+uglyMarkdown = '''
+# some markdown #
+
+Lorem ipsum dolor adipiscing
+
+
+quis massa lorem
+'''
+
+cleanMarkdown = tidyMarkdown(uglyMarkdown)
+console.log cleanMarkdown
+```
+
+which outputs:
+
+```markdown
+# some markdown
+Lorem ipsum dolor adipiscing
+
+quis massa lorem
+```
+
 ## Features
 - standardize syntatical elements to use a single way of being written (for example, all unordered lists are formatted to start with hyphens, rather than allowing asterisks and/or addition signs to be mixed in).
 - fix numbering - making ordered lists count naturally from 1 to _n_ and reference links do the same (based on first occurance).
