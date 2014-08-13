@@ -207,6 +207,21 @@ describe 'tables', ->
       Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
     ''')
 
+  it 'should handle tables with text alignment', ->
+    prettyMarkdown('''
+      Group                     | Domain          | First Appearance
+      ------------------------: | :-------------: | :---------------
+      ShinRa                    | Mako Reactors   | FFVII
+      Moogles                   | MogNet          | FFIII
+      Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+    ''').should.equal('''
+      Group                     | Domain          | First Appearance
+      ------------------------: | :-------------: | :---------------
+                         ShinRa | Mako Reactors   | FFVII
+                        Moogles | MogNet          | FFIII
+      Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+    ''')
+
 describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')

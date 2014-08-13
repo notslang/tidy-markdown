@@ -245,18 +245,27 @@ module.exports = (dirtyMarkdown) ->
           colWidth = longestStringInArray(col)
           token.header[i] = pad(token.header[i], colWidth)
 
-          #TODO: add support for non-left align
-          token.align[i] = pad('', colWidth, '-')
+          alignment = token.align[i]
+          token.align[i] = (
+            switch alignment
+              when null then pad('', colWidth, '-')
+              when 'left' then ':' + pad('', colWidth - 1, '-')
+              when 'center' then ':' + pad('', colWidth - 2, '-') + ':'
+              when 'right' then pad('', colWidth - 1, '-') + ':'
+          )
 
           for j in [0...token.cells.length]
-            token.cells[j][i] = pad(token.cells[j][i], colWidth)
+            token.cells[j][i] = (
+              if alignment is 'right'
+                pad(colWidth, token.cells[j][i])
+              else
+                pad(token.cells[j][i], colWidth)
+            )
 
         out.push token.header.join(' | ')
         out.push token.align.join(' | ')
         for row in token.cells
-          out.push row.join(' | ').trim() # no trailing whitespace
-
-
+          out.push row.join(' | ').trimRight() # no trailing whitespace
 
     previousToken = token
 
