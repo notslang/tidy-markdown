@@ -277,6 +277,8 @@ module.exports = (dirtyMarkdown) ->
     optionalTitle = if link.title then " \"#{link.title}\"" else ''
     out.push "[#{id}]: #{link.href}#{optionalTitle}"
 
+  out.push '' # trailing newline
+
   # filter multiple sequential linebreaks
   out = out.filter (val, i, arr) -> not (val is '' and arr[i - 1] is '')
   return out.join('\n')
