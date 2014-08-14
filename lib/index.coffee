@@ -240,6 +240,9 @@ module.exports = (dirtyMarkdown) ->
         for i in [0...token.header.length]
           col = [token.header[i]]
           for j in [0...token.cells.length]
+            # https://github.com/chjj/marked/issues/473
+            token.cells[j][i] = token.cells[j][i].trim()
+
             col.push token.cells[j][i]
 
           colWidth = longestStringInArray(col)
