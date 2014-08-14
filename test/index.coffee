@@ -1,10 +1,13 @@
 should = require 'should'
-tidyMarkdown = require '../lib'
+tidyMd = require '../lib'
 fs = require 'fs'
+
+# tidyMd witout the trailing newline
+tidyMdSnippet = (text) -> tidyMd(text).trimRight()
 
 describe 'headings', ->
   it 'should fix spaces between heading and text', ->
-    tidyMarkdown('''
+    tidyMdSnippet('''
       #test
       ##test
       ###test
@@ -15,7 +18,7 @@ describe 'headings', ->
     ''')
 
   it 'should fix atx-style headings', ->
-    tidyMarkdown('''
+    tidyMdSnippet('''
       # test #
       ## test ##
       ### test ###
@@ -26,7 +29,7 @@ describe 'headings', ->
     ''')
 
   it 'should fix underlined headings', ->
-    tidyMarkdown('''
+    tidyMdSnippet('''
       test
       ====
       test
@@ -37,13 +40,13 @@ describe 'headings', ->
     ''')
 
   it 'should fix skips between header levels', ->
-    tidyMarkdown('''
+    tidyMdSnippet('''
       ## test
     ''').should.equal('''
       # test
     ''')
 
-    tidyMarkdown('''
+    tidyMdSnippet('''
       # test
       ### test
       ### test
@@ -53,7 +56,7 @@ describe 'headings', ->
       ## test
     ''')
 
-    tidyMarkdown('''
+    tidyMdSnippet('''
       # test
       ### test
       #### test
@@ -68,15 +71,15 @@ describe 'headings', ->
     ''')
 
   it 'should strip trailing whitespace', ->
-    tidyMarkdown('#test ').should.equal('# test')
+    tidyMdSnippet('#test ').should.equal('# test')
 
 describe 'paragraphs', ->
   it 'should get rid of mid-paragraph linebreaks', ->
-    tidyMarkdown('Lorem ipsum dolor adipiscing\nquis massa lorem')
+    tidyMdSnippet('Lorem ipsum dolor adipiscing\nquis massa lorem')
       .should.equal('Lorem ipsum dolor adipiscing quis massa lorem')
 
   it 'should only separate paragraphs with one blank line', ->
-    tidyMarkdown('''
+    tidyMdSnippet('''
       Lorem ipsum dolor adipiscing
 
 
@@ -89,7 +92,7 @@ describe 'paragraphs', ->
 
 describe 'blockquotes', ->
   it 'should normalize blockquotes', ->
-    tidyMarkdown('''
+    tidyMdSnippet('''
       > blockquote with two paragraphs
       > consectetuer adipiscing
       >
@@ -103,7 +106,7 @@ describe 'blockquotes', ->
 
 describe 'lists', ->
   it 'should normalize unordered lists', ->
-    tidyMarkdown('''
+    tidyMdSnippet('''
        * item
        * another item
        * last item
@@ -112,7 +115,7 @@ describe 'lists', ->
       - another item
       - last item
     ''')
-    tidyMarkdown('''
+    tidyMdSnippet('''
        + item
        + another item
        + last item
@@ -123,7 +126,7 @@ describe 'lists', ->
     ''')
 
   it 'should normalize unordered nested lists', ->
-    tidyMarkdown('''
+    tidyMdSnippet('''
        - item
        - another item
          - sub-list item
@@ -143,57 +146,57 @@ describe 'lists', ->
 
 describe 'inline grammar', ->
   it 'should handle special characters', ->
-    tidyMarkdown('2 < 4').should.equal('2 < 4')
-    tidyMarkdown('5 > 4').should.equal('5 > 4')
+    tidyMdSnippet('2 < 4').should.equal('2 < 4')
+    tidyMdSnippet('5 > 4').should.equal('5 > 4')
 
   it 'should handle bold text', ->
-    tidyMarkdown('**bold**').should.equal('**bold**')
-    tidyMarkdown('__bold__').should.equal('**bold**')
+    tidyMdSnippet('**bold**').should.equal('**bold**')
+    tidyMdSnippet('__bold__').should.equal('**bold**')
 
   it 'should handle italic text', ->
-    tidyMarkdown('*italic*').should.equal('_italic_')
-    tidyMarkdown('_italic_').should.equal('_italic_')
+    tidyMdSnippet('*italic*').should.equal('_italic_')
+    tidyMdSnippet('_italic_').should.equal('_italic_')
 
   it 'should handle code', ->
-    tidyMarkdown('<code>code</code>').should.equal('`code`')
-    tidyMarkdown('`code`').should.equal('`code`')
-    tidyMarkdown('` code `').should.equal('`code`')
-    tidyMarkdown('```blah` ``').should.equal('`` `blah` ``')
-    tidyMarkdown('` ``blah`` `').should.equal('` ``blah`` `')
+    tidyMdSnippet('<code>code</code>').should.equal('`code`')
+    tidyMdSnippet('`code`').should.equal('`code`')
+    tidyMdSnippet('` code `').should.equal('`code`')
+    tidyMdSnippet('```blah` ``').should.equal('`` `blah` ``')
+    tidyMdSnippet('` ``blah`` `').should.equal('` ``blah`` `')
 
   it 'should handle strikethrough', ->
-    tidyMarkdown('<del>code</del>').should.equal('~~code~~')
-    tidyMarkdown('~~code~~').should.equal('~~code~~')
+    tidyMdSnippet('<del>code</del>').should.equal('~~code~~')
+    tidyMdSnippet('~~code~~').should.equal('~~code~~')
 
   it 'should handle links', ->
-    tidyMarkdown('[text](#anchor)').should.equal('[text](#anchor)')
-    tidyMarkdown('[text]( #anchor )').should.equal('[text](#anchor)')
-    tidyMarkdown('[](#anchor)').should.equal('[](#anchor)')
-    tidyMarkdown('[]()').should.equal('[]()')
-    tidyMarkdown('[](#anchor "Title")').should.equal('[](#anchor "Title")')
+    tidyMdSnippet('[text](#anchor)').should.equal('[text](#anchor)')
+    tidyMdSnippet('[text]( #anchor )').should.equal('[text](#anchor)')
+    tidyMdSnippet('[](#anchor)').should.equal('[](#anchor)')
+    tidyMdSnippet('[]()').should.equal('[]()')
+    tidyMdSnippet('[](#anchor "Title")').should.equal('[](#anchor "Title")')
 
   it 'should handle images', ->
-    tidyMarkdown('![text](image.jpg)').should.equal('![text](image.jpg)')
-    tidyMarkdown('![text]( image.jpg )').should.equal('![text](image.jpg)')
-    tidyMarkdown('![]()').should.equal('![]()')
-    tidyMarkdown('![]("")').should.equal('![]("")')
-    tidyMarkdown(
+    tidyMdSnippet('![text](image.jpg)').should.equal('![text](image.jpg)')
+    tidyMdSnippet('![text]( image.jpg )').should.equal('![text](image.jpg)')
+    tidyMdSnippet('![]()').should.equal('![]()')
+    tidyMdSnippet('![]("")').should.equal('![]("")')
+    tidyMdSnippet(
       '![alt text](/path/to/img.jpg "Title")'
     ).should.equal(
       '![alt text](/path/to/img.jpg "Title")'
     )
-    tidyMarkdown(
+    tidyMdSnippet(
       '[![text]( image.jpg )]( #anchor )'
     ).should.equal(
       '[![text](image.jpg)](#anchor)'
     )
 
   it 'should allow inline html to pass through', ->
-    tidyMarkdown('<span>blag</span>').should.equal('<span>blag</span>')
+    tidyMdSnippet('<span>blag</span>').should.equal('<span>blag</span>')
 
 describe 'tables', ->
   it 'should handle tables', ->
-    tidyMarkdown('''
+    tidyMd('''
       Group                     | Domain          | First Appearance
       ------------------------- | --------------- | ----------------
       ShinRa                    | Mako Reactors   | FFVII
@@ -205,10 +208,11 @@ describe 'tables', ->
       ShinRa                    | Mako Reactors   | FFVII
       Moogles                   | MogNet          | FFIII
       Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+
     ''')
 
   it 'should handle tables with text alignment', ->
-    tidyMarkdown('''
+    tidyMd('''
       Group                     | Domain          | First Appearance
       ------------------------: | :-------------: | :---------------
       ShinRa                    | Mako Reactors   | FFVII
@@ -220,16 +224,32 @@ describe 'tables', ->
                          ShinRa | Mako Reactors   | FFVII
                         Moogles | MogNet          | FFIII
       Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+
+    ''')
+
+    tidyMd('''
+      Group                     | Domain          | First Appearance
+      ------------------------- | :-------------: | :---------------
+                         ShinRa | Mako Reactors   | FFVII
+                        Moogles |          MogNet | FFIII
+      Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+    ''').should.equal('''
+      Group                     | Domain          | First Appearance
+      ------------------------- | :-------------: | :---------------
+      ShinRa                    | Mako Reactors   | FFVII
+      Moogles                   | MogNet          | FFIII
+      Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+
     ''')
 
 describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
       try
-        tidyMarkdown(
+        tidyMd(
           fs.readFileSync("./test/cases/#{file}", encoding: 'utf8')
-        ).trim().should.equal(
-          fs.readFileSync("./test/expected/#{file}", encoding: 'utf8').trim()
+        ).should.equal(
+          fs.readFileSync("./test/expected/#{file}", encoding: 'utf8')
         )
       catch e
         e.showDiff = false
