@@ -270,6 +270,13 @@ module.exports = (dirtyMarkdown) ->
         for row in token.cells
           out.push row.join(' | ').trimRight() # no trailing whitespace
 
+      when 'hr'
+        if previousToken? then out.push ''
+        out.push token.indent + stringRepeat('-', 10), ''
+
+      else
+        throw new Error("Unknown Token: #{token.type}")
+
     previousToken = token
 
   if Object.keys(links).length > 0 then out.push ''

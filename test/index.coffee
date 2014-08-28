@@ -242,6 +242,22 @@ describe 'tables', ->
 
     ''')
 
+describe 'horizontal rules', ->
+  it 'should normalize blockquotes', ->
+    tidyMdSnippet('''
+      ***
+
+      -------------------------
+
+      _____
+    ''').should.equal('''
+      ----------
+
+      ----------
+
+      ----------
+    ''')
+
 describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
