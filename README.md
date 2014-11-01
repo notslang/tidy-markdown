@@ -3,6 +3,39 @@
 
 Beautify Markdown, fixing formatting mistakes and converting basic HTML & Unicode into their Markdown equilivants. Based on the conventions in [Carrot Creative's Markdown Styleguide](https://github.com/carrot/markdown-styleguide) and built on [Marked](https://github.com/chjj/marked).
 
+## Install
+Tidy Markdown is an [npm](npmjs.org) package, so it can be installed like this:
+
+```bash
+npm install tidy-markdown -g
+```
+
+## CLI
+Tidy Markdown includes a simple CLI. It (currently) takes no arguments and operates entirely over STDIN/STDOUT. For example:
+
+```bash
+$ echo "# a header #" | tidy-markdown
+# a header
+```
+
+Or using a file:
+
+```bash
+$ tidy-markdown < ./ugly-markdown
+# Some markdown
+Lorem ipsum dolor adipiscing
+- one
+- two
+- three
+```
+
+And, of course, we can output to a file too:
+
+```bash
+$ tidy-markdown < ./ugly-markdown > ./clean-markdown
+```
+
+
 ## API
 Tidy Markdown only exports one function, that takes one argument (the string of ugly markdown). Here's an example of how it can be used:
 
@@ -10,12 +43,14 @@ Tidy Markdown only exports one function, that takes one argument (the string of 
 tidyMarkdown = require 'tidy-markdown'
 
 uglyMarkdown = '''
-# some markdown #
+# Some markdown #
 
 Lorem ipsum dolor adipiscing
 
 
-quis massa lorem
+- one
+*  two
++ three
 '''
 
 cleanMarkdown = tidyMarkdown(uglyMarkdown)
@@ -25,10 +60,11 @@ console.log cleanMarkdown
 which outputs:
 
 ```markdown
-# some markdown
+# Some markdown
 Lorem ipsum dolor adipiscing
-
-quis massa lorem
+- one
+- two
+- three
 ```
 
 ## Features
