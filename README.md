@@ -1,7 +1,7 @@
 # Tidy Markdown
 [![Build Status](http://img.shields.io/travis/slang800/tidy-markdown.svg?style=flat-square)](https://travis-ci.org/slang800/tidy-markdown) [![NPM version](http://img.shields.io/npm/v/tidy-markdown.svg?style=flat-square)](https://www.npmjs.org/package/tidy-markdown) [![NPM license](http://img.shields.io/npm/l/tidy-markdown.svg?style=flat-square)](https://www.npmjs.org/package/tidy-markdown)
 
-Beautify Markdown, fixing formatting mistakes and converting basic HTML & Unicode into their Markdown equilivants. Based on the conventions in [Carrot Creative's Markdown Styleguide](https://github.com/carrot/markdown-styleguide) and built on [Marked](https://github.com/chjj/marked).
+Beautify Markdown, fixing formatting mistakes and converting basic HTML & Unicode into their Markdown equivalents. Based on the conventions in [Carrot Creative's Markdown Styleguide](https://github.com/carrot/markdown-styleguide) and built on [Marked](https://github.com/chjj/marked).
 
 ## Install
 Tidy Markdown is an [npm](npmjs.org) package, so it can be installed like this:
@@ -34,7 +34,6 @@ And, of course, we can output to a file too:
 ```bash
 $ tidy-markdown < ./ugly-markdown > ./clean-markdown
 ```
-
 
 ## API
 Tidy Markdown only exports one function, that takes one argument (the string of ugly markdown). Here's an example of how it can be used:
