@@ -272,7 +272,7 @@ module.exports = (dirtyMarkdown) ->
 
       when 'hr'
         if previousToken? then out.push ''
-        out.push token.indent + stringRepeat('-', 10), ''
+        out.push token.indent + stringRepeat('-', 80), ''
 
       else
         throw new Error("Unknown Token: #{token.type}")
