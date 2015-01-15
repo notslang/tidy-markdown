@@ -148,7 +148,7 @@ preprocessAST = (ast) ->
  * h3), which screws up things like tables of contents. This function fixes
  * that.
 
- * The algorithim assumes that relations between nearby headers are correct and
+ * The algorithm assumes that relations between nearby headers are correct and
  * will try to preserve them. For example, "h1, h3, h3" becomes "h1, h2, h2"
  * rather than "h1, h2, h3".
 ###
