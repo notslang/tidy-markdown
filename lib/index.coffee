@@ -274,6 +274,9 @@ module.exports = (dirtyMarkdown) ->
         if previousToken? then out.push ''
         out.push token.indent + stringRepeat('-', 80), ''
 
+      when 'html'
+        out.push line for line in token.text.split('\n')
+
       else
         throw new Error("Unknown Token: #{token.type}")
 
