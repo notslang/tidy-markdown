@@ -265,10 +265,25 @@ module.exports = (dirtyMarkdown) ->
                 pad(token.cells[j][i], colWidth)
             )
 
-        out.push token.header.join(' | ')
-        out.push token.align.join(' | ')
-        for row in token.cells
-          out.push row.join(' | ').trimRight() # no trailing whitespace
+        # trimRight is to remove any trailing whitespace added by the padding
+        if token.header.length > 1
+          out.push token.header.join(' | ').trimRight()
+          out.push token.align.join(' | ')
+
+          for row in token.cells
+            out.push row.join(' | ').trimRight()
+        else
+          # use a leading pipe for single col tables, otherwise the output won't
+          # render as a table
+          out.push '| ' + token.header[0].trimRight()
+          out.push '| ' + token.align[0]
+
+          for row in token.cells
+            out.push '| ' + row[0].trimRight()
+
+
+
+        out.push '' # newline after tables
 
       when 'hr'
         if previousToken? then out.push ''

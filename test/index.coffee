@@ -211,6 +211,22 @@ describe 'tables', ->
 
     ''')
 
+  it 'should support single column tables & not make trailing whitespace', ->
+    tidyMd('''
+      | Group
+      | -------------------------
+      | ShinRa
+      | Moogles
+      | Vana'diel Chocobo Society
+    ''').should.equal('''
+      | Group
+      | -------------------------
+      | ShinRa
+      | Moogles
+      | Vana'diel Chocobo Society
+
+    ''')
+
   it 'should handle tables with text alignment', ->
     tidyMd('''
       Group                     | Domain          | First Appearance
