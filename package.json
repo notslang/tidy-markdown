@@ -26,6 +26,7 @@
   ],
   "license": "GPLv3",
   "main": "lib",
+  "repository": "git://github.com/slang800/tidy-markdown.git",
   "scripts": {
     "test": "mocha"
   }
