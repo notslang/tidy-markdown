@@ -2,6 +2,9 @@ marked = require 'marked'
 Entities = require('html-entities').AllHtmlEntities
 indent = require 'indent'
 pad = require 'pad'
+yaml = require 'js-yaml'
+fm = require 'front-matter'
+
 
 htmlEntities = new Entities()
 
@@ -185,12 +188,18 @@ fixHeaders = (ast) ->
   return ast
 
 module.exports = (dirtyMarkdown) ->
-  ast = marked.lexer(dirtyMarkdown)
+  out = []
+
+  # handle yaml front-matter
+  content = fm(dirtyMarkdown)
+  if Object.keys(content.attributes).length isnt 0
+    out.push '---', yaml.safeDump(content.attributes).trim(), '---\n'
+
+  ast = marked.lexer(content.body)
 
   # see issue: https://github.com/chjj/marked/issues/472
   links = ast.links
 
-  out = []
   previousToken = undefined
 
   # remove all the `space` and `list_end` tokens - they're useless

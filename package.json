@@ -7,8 +7,10 @@
     "tidy-markdown": "./bin/index.js"
   },
   "dependencies": {
+    "front-matter": "^1.0.0",
     "html-entities": "^1.0.10",
     "indent": "0.0.1",
+    "js-yaml": "^3.2.7",
     "marked": "^0.3.2",
     "pad": "0.0.5"
   },

@@ -294,6 +294,23 @@ describe 'html', ->
       </dl>
     ''')
 
+
+describe 'front-matter', ->
+  it 'should handle front-matter', ->
+    tidyMdSnippet('''
+      ---
+      title: "Awesome markdown file"
+      ---
+      My content
+    ''').should.equal('''
+      ---
+      title: Awesome markdown file
+      ---
+
+      My content
+    ''')
+
+
 describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
