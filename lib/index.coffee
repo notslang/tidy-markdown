@@ -155,22 +155,48 @@ preprocessAST = (ast) ->
  * will try to preserve them. For example, "h1, h3, h3" becomes "h1, h2, h2"
  * rather than "h1, h2, h3".
 ###
-fixHeaders = (ast) ->
+fixHeaders = (ast, ensureFirstHeaderIsH1) ->
   i = 0
+
+  # by starting at 0, we force the first header to be an h1 (or an h0, but that
+  # doesn't exist)
   lastHeaderDepth = 0
+
+  if not ensureFirstHeaderIsH1
+    e = 0
+    while e < ast.length
+      if ast[e].type isnt 'heading'
+        e++ # keep going
+      else
+        # we found the first header, set the depth to `firstHeaderDepth - 1` so
+        # the rest of the function will act as though that was the root
+        lastHeaderDepth = ast[e].depth - 1
+        break
+
+  # we track the rootDepth to ensure that no headers go "below" the level of the
+  # first one. for example h3, h4, h2 would need to be corrected to h3, h4, h3.
+  # this is really only needed when the first header isn't an h1.
+  rootDepth = lastHeaderDepth + 1
+
   while i < ast.length
     if ast[i].type isnt 'heading'
       # nothing
-    else if ast[i].depth <= lastHeaderDepth + 1
+    else if rootDepth <= ast[i].depth <= lastHeaderDepth + 1
       lastHeaderDepth = ast[i].depth
     else
       # find all the children of that header and cut them down by the amount in
       # the gap between the offending header and the last good header. For
       # example, a jump from h1 to h3 would be `gap = 1` and all headers
       # directly following that h3 which are h3 or greater would need to be
-      # reduced by 1 level.
+      # reduced by 1 level. and of course the offending header is reduced too.
+      # if the issue is that the offending header is below the root header, then
+      # the same procedure is applied, but *increasing* the offending header &
+      # children to the nearest acceptable level.
       e = i
-      gap = ast[i].depth - (lastHeaderDepth + 1)
+      if ast[i].depth <= rootDepth
+        gap = ast[i].depth - rootDepth
+      else
+        gap = ast[i].depth - (lastHeaderDepth + 1)
       parentDepth = ast[i].depth
       while e < ast.length
         if ast[e].type isnt 'heading'
@@ -236,7 +262,9 @@ formatTable = (token) ->
   out.push '' # newline after tables
   return out
 
-module.exports = (dirtyMarkdown, options) ->
+module.exports = (dirtyMarkdown, options = {}) ->
+  options.ensureFirstHeaderIsH1 ?= true
+
   out = []
 
   # handle yaml front-matter
@@ -268,7 +296,7 @@ module.exports = (dirtyMarkdown, options) ->
     return token
 
   ast = preprocessAST(ast)
-  ast = fixHeaders(ast)
+  ast = fixHeaders(ast, options.ensureFirstHeaderIsH1)
 
   for token in ast
     token.indent ?= ''

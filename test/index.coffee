@@ -3,7 +3,7 @@ tidyMd = require '../lib'
 fs = require 'fs'
 
 # tidyMd witout the trailing newline
-tidyMdSnippet = (text) -> tidyMd(text).trimRight()
+tidyMdSnippet = (text, options) -> tidyMd(text, options).trimRight()
 
 describe 'headings', ->
   it 'should fix spaces between heading and text', ->
@@ -68,6 +68,50 @@ describe 'headings', ->
       ### test
       ## test
       ### test
+    ''')
+
+  it 'should fix the first header level', ->
+    tidyMdSnippet('''
+      ### test
+      #### test
+      ### test
+      #### test
+    ''').should.equal('''
+      # test
+      ## test
+      # test
+      ## test
+    ''')
+
+  it 'should optionally allow the first header level to be > h1', ->
+    tidyMdSnippet(
+      '''
+      ### test
+      #### test
+      ### test
+      #### test
+      '''
+      ensureFirstHeaderIsH1: false
+    ).should.equal('''
+      ### test
+      #### test
+      ### test
+      #### test
+    ''')
+
+    tidyMdSnippet(
+      '''
+      ### test
+      #### test
+      # test
+      ## test
+      '''
+      ensureFirstHeaderIsH1: false
+    ).should.equal('''
+      ### test
+      #### test
+      ### test
+      #### test
     ''')
 
   it 'should strip trailing whitespace', ->
