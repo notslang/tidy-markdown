@@ -187,7 +187,56 @@ fixHeaders = (ast) ->
     i++
   return ast
 
-module.exports = (dirtyMarkdown) ->
+formatTable = (token) ->
+  out = []
+  for i in [0...token.header.length]
+    col = [token.header[i]]
+    for j in [0...token.cells.length]
+      # https://github.com/chjj/marked/issues/473
+      token.cells[j][i] = token.cells[j][i].trim()
+
+      col.push token.cells[j][i]
+
+    colWidth = longestStringInArray(col)
+    token.header[i] = pad(token.header[i], colWidth)
+
+    alignment = token.align[i]
+    token.align[i] = (
+      switch alignment
+        when null then pad('', colWidth, '-')
+        when 'left' then ':' + pad('', colWidth - 1, '-')
+        when 'center' then ':' + pad('', colWidth - 2, '-') + ':'
+        when 'right' then pad('', colWidth - 1, '-') + ':'
+    )
+
+    for j in [0...token.cells.length]
+      token.cells[j][i] = (
+        if alignment is 'right'
+          pad(colWidth, token.cells[j][i])
+        else
+          pad(token.cells[j][i], colWidth)
+      )
+
+  # trimRight is to remove any trailing whitespace added by the padding
+  if token.header.length > 1
+    out.push token.header.join(' | ').trimRight()
+    out.push token.align.join(' | ')
+
+    for row in token.cells
+      out.push row.join(' | ').trimRight()
+  else
+    # use a leading pipe for single col tables, otherwise the output won't
+    # render as a table
+    out.push '| ' + token.header[0].trimRight()
+    out.push '| ' + token.align[0]
+
+    for row in token.cells
+      out.push '| ' + row[0].trimRight()
+
+  out.push '' # newline after tables
+  return out
+
+module.exports = (dirtyMarkdown, options) ->
   out = []
 
   # handle yaml front-matter
@@ -246,53 +295,7 @@ module.exports = (dirtyMarkdown) ->
         out.push '', indent(token.text, token.indent), ''
       when 'table'
         if previousToken? then out.push ''
-        for i in [0...token.header.length]
-          col = [token.header[i]]
-          for j in [0...token.cells.length]
-            # https://github.com/chjj/marked/issues/473
-            token.cells[j][i] = token.cells[j][i].trim()
-
-            col.push token.cells[j][i]
-
-          colWidth = longestStringInArray(col)
-          token.header[i] = pad(token.header[i], colWidth)
-
-          alignment = token.align[i]
-          token.align[i] = (
-            switch alignment
-              when null then pad('', colWidth, '-')
-              when 'left' then ':' + pad('', colWidth - 1, '-')
-              when 'center' then ':' + pad('', colWidth - 2, '-') + ':'
-              when 'right' then pad('', colWidth - 1, '-') + ':'
-          )
-
-          for j in [0...token.cells.length]
-            token.cells[j][i] = (
-              if alignment is 'right'
-                pad(colWidth, token.cells[j][i])
-              else
-                pad(token.cells[j][i], colWidth)
-            )
-
-        # trimRight is to remove any trailing whitespace added by the padding
-        if token.header.length > 1
-          out.push token.header.join(' | ').trimRight()
-          out.push token.align.join(' | ')
-
-          for row in token.cells
-            out.push row.join(' | ').trimRight()
-        else
-          # use a leading pipe for single col tables, otherwise the output won't
-          # render as a table
-          out.push '| ' + token.header[0].trimRight()
-          out.push '| ' + token.align[0]
-
-          for row in token.cells
-            out.push '| ' + row[0].trimRight()
-
-
-
-        out.push '' # newline after tables
+        out.push(formatTable(token)...)
 
       when 'hr'
         if previousToken? then out.push ''
