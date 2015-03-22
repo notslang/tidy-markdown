@@ -7,6 +7,7 @@
     "tidy-markdown": "./bin/index.js"
   },
   "dependencies": {
+    "argparse": "^1.0.1",
     "front-matter": "^1.0.0",
     "html-entities": "^1.0.10",
     "indent": "0.0.1",
