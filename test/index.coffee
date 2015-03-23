@@ -255,6 +255,19 @@ describe 'tables', ->
 
     ''')
 
+  it 'should handle tables with missing values', ->
+    tidyMd('''
+      Name |  Type |  Description | Choices
+      -----| ------|  -------------| -------
+      creator_license_id |  unknown | License which...
+
+    ''').should.equal('''
+      Name               | Type    | Description      | Choices
+      ------------------ | ------- | ---------------- | -------
+      creator_license_id | unknown | License which... |
+
+    ''')
+
   it 'should support single column tables & not make trailing whitespace', ->
     tidyMd('''
       | Group
