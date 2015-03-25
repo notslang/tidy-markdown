@@ -3,6 +3,8 @@
 
 Beautify Markdown, fixing formatting mistakes and converting basic HTML & Unicode into their Markdown equivalents. Based on the conventions in [Carrot Creative's Markdown Styleguide](https://github.com/carrot/markdown-styleguide) and built on [Marked](https://github.com/chjj/marked).
 
+There is also an [Atom Plugin](https://atom.io/packages/tidy-markdown) to run this entirely within your editor.
+
 ## Install
 Tidy Markdown is an [npm](http://npmjs.org/package/tidy-markdown) package, so it can be installed like this:
 
