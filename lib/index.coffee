@@ -81,10 +81,10 @@ preprocessAST = (ast) ->
   i = 0
   out = []
   orderedList = false
-  orderedListItemNumber = 0
   while i < ast.length
     currentToken = ast[i]
     if currentToken.type is 'list_start'
+      orderedListItemNumber = 0
       # this is actually all we need the list start token for
       orderedList = currentToken.ordered
     else if currentToken.type in nestingStartTokens

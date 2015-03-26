@@ -187,6 +187,26 @@ describe 'lists', ->
       - last item
     ''')
 
+  it 'should normalize ordered lists', ->
+    tidyMdSnippet('''
+      # H1 header
+      1. blah
+      2. blah
+      3. blah
+
+      # another H1  header
+      1. blah
+      2. blah
+    ''').should.equal('''
+      # H1 header
+      1. blah
+      2. blah
+      3. blah
+
+      # another H1  header
+      1. blah
+      2. blah
+    ''')
 
 describe 'inline grammar', ->
   it 'should handle special characters', ->
