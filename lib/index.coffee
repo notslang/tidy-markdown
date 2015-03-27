@@ -88,20 +88,19 @@ preprocessAST = (ast) ->
       # this is actually all we need the list start token for
       orderedList = currentToken.ordered
     else if currentToken.type in nestingStartTokens
-      nestingStartToken = currentToken.type
-      tokenIndex = nestingStartTokens.indexOf(nestingStartToken)
-      nestingEndToken = nestingEndTokens[tokenIndex]
+      tokenIndex = nestingStartTokens.indexOf(currentToken.type)
       currentToken.type = nestContainingTokens[tokenIndex]
       i++
 
-      # if other nestingStartTokens of the same type open while looking for the
-      # end of this subAST, make sure not to steal their nestingEndToken
+      # there is no `loose_item_end` token, so we don't actually check the type
+      # of the token that's closing a given nesting level... we just assume it's
+      # correct.
       nestingLevel = 1
       subAST = []
       loop
-        if ast[i].type is nestingEndToken
+        if ast[i].type in nestingEndTokens
           nestingLevel--
-        if ast[i].type is nestingStartToken
+        else if ast[i].type in nestingStartTokens
           nestingLevel++
 
         if nestingLevel is 0
@@ -285,20 +284,6 @@ module.exports = (dirtyMarkdown, options = {}) ->
 
   # remove all the `space` and `list_end` tokens - they're useless
   ast = ast.filter (token) -> token.type not in ['space', 'list_end']
-
-  # there is no `loose_item_end` token, so we need to make it. thankfully, it's
-  # pretty easy to determine where they go, by finding `list_item_end` wherever
-  # there's an unclosed `loose_item`
-  openLooseItem = false
-  ast = ast.map (token) ->
-    if token.type is 'loose_item_start'
-      openLooseItem = true
-    else if token.type is 'list_item_end' and openLooseItem
-      openLooseItem = false
-      # replace the list_item_end with loose_item_end
-      token = type: 'loose_item_end'
-    return token
-
   ast = preprocessAST(ast)
   ast = fixHeaders(ast, options.ensureFirstHeaderIsH1)
 

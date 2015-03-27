@@ -187,6 +187,28 @@ describe 'lists', ->
       - last item
     ''')
 
+  it 'should normalize unordered nested lists (2)', ->
+    tidyMdSnippet('''
+      + adas
+        - asdas
+        - sdas
+
+      + sdfsdas
+          - sddfasdfdfs
+          - sdfafasdfsa
+      + asdfads
+    ''').should.equal('''
+      - adas
+        - asdas
+        - sdas
+
+      - sdfsdas
+        - sddfasdfdfs
+        - sdfafasdfsa
+
+      - asdfads
+    ''')
+
   it 'should normalize ordered lists', ->
     tidyMdSnippet('''
       # H1 header
