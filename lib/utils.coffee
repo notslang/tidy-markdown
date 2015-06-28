@@ -1,3 +1,8 @@
+###*
+ * @param {String} x The string to be repeated
+ * @param {String} n Number of times to repeat the string
+ * @return {String} The result of repeating the string
+###
 stringRepeat = (x, n) ->
   s = ''
   loop
@@ -22,8 +27,8 @@ longestStringInArray = (array) ->
 
 ###*
  * Wrap code with delimiters
- * @param {[type]} code
- * @param {[type]} delimiter The delimiter to start with, additional backticks
+ * @param {String} code
+ * @param {String} delimiter The delimiter to start with, additional backticks
    will be added if needed; like if the code contains a sequence of backticks
    that would end the code block prematurely.
 ###
