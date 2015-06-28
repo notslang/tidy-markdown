@@ -1,5 +1,4 @@
 marked = require 'marked'
-Entities = require('html-entities').AllHtmlEntities
 indent = require 'indent'
 pad = require 'pad'
 yaml = require 'js-yaml'
@@ -7,34 +6,8 @@ fm = require 'front-matter'
 
 {stringRepeat, longestStringInArray, delimitCode} = require './utils'
 preprocessAST = require './preprocess'
+tidyInlineMarkdown = require './tidy-inline-markdown'
 
-htmlEntities = new Entities()
-
-IMG_REGEX = /<img src="([^"]*)"(?: alt="([^"]*)")?(?: title="([^"]*)")?>/g
-LINK_REGEX = /<a href="([^"]*)"(?: title="([^"]*)")?>([^<]*)<\/a>/g
-CODE_REGEX = /<code>([^<]+)<\/code>/g
-prettyInlineMarkdown = (token) ->
-  token.text = marked
-    .inlineLexer(token.text, token.links or {})
-    .replace /\u2014/g, '--' # em-dashes
-    .replace /\u2018|\u2019/g, '\'' # opening/closing singles & apostrophes
-    .replace /\u201c|\u201d/g, '"' # opening/closing doubles
-    .replace /\u2026/g, '...' # ellipses
-    .replace /<\/?strong>/g, '**'
-    .replace /<\/?em>/g, '_'
-    .replace /<\/?del>/g, '~~'
-    .replace CODE_REGEX, (m, code) -> delimitCode(code, '`')
-    .replace IMG_REGEX, (m, url='', alt='', title) ->
-      if title?
-        url += " \"#{title.replace /\\|"/g, (m) -> "\\#{m}"}\""
-      return "![#{alt}](#{url})"
-    .replace LINK_REGEX, (m, url='', title, text='') ->
-      if title?
-        url += " \"#{title.replace /\\|"/g, (m) -> "\\#{m}"}\""
-      return "[#{text}](#{url})"
-
-  token.text = htmlEntities.decode(token.text)
-  return token
 
 ###*
  * Some people accidently skip levels in their headers (like jumping from h1 to
@@ -189,7 +162,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
         if previousToken?.type in ['paragraph', 'list_item', 'text']
           out.push ''
         out.push(
-          token.indent + prettyInlineMarkdown(token).text.replace /\n/g, ' '
+          token.indent + tidyInlineMarkdown(token).text.replace /\n/g, ' '
         )
       when 'text', 'list_item'
         if previousToken? and token.type is 'list_item' and
@@ -198,7 +171,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
            previousToken.nesting?.length >= token.nesting.length))
 
           out.push ''
-        out.push token.indent + prettyInlineMarkdown(token).text
+        out.push token.indent + tidyInlineMarkdown(token).text
       when 'code'
         token.lang ?= ''
         token.text = delimitCode("#{token.lang}\n#{token.text}\n", '```')
