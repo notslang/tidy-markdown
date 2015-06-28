@@ -1,8 +1,8 @@
-marked = require 'marked'
+fm = require 'front-matter'
 indent = require 'indent'
+marked = require 'marked'
 pad = require 'pad'
 yaml = require 'js-yaml'
-fm = require 'front-matter'
 
 {stringRepeat, longestStringInArray, delimitCode} = require './utils'
 preprocessAST = require './preprocess'
