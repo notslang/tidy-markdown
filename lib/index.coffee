@@ -9,16 +9,16 @@ preprocessAST = require './preprocess'
 
 htmlEntities = new Entities()
 
-`function stringRepeat(x, n) {
-  var s = '';
-  for (;;) {
-    if (n & 1) s += x;
-    n >>= 1;
-    if (n) x += x;
-    else break;
-  }
-  return s;
-}`
+stringRepeat = (x, n) ->
+  s = ''
+  loop
+    if n & 1 then s += x
+    n >>= 1
+    if n
+      x += x
+    else
+      break
+  return s
 
 ###*
  * Find the length of the longest string in an array
@@ -227,7 +227,9 @@ module.exports = (dirtyMarkdown, options = {}) ->
       when 'paragraph'
         if previousToken?.type in ['paragraph', 'list_item', 'text']
           out.push ''
-        out.push token.indent + prettyInlineMarkdown(token).text.replace /\n/g, ' '
+        out.push(
+          token.indent + prettyInlineMarkdown(token).text.replace /\n/g, ' '
+        )
       when 'text', 'list_item'
         if previousToken? and token.type is 'list_item' and
            (previousToken.nesting.length > token.nesting.length or
