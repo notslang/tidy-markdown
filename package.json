@@ -27,7 +27,7 @@
     "parse",
     "styleguide"
   ],
-  "license": "GPLv3",
+  "license": "GPL-3.0",
   "main": "lib",
   "repository": "git://github.com/slang800/tidy-markdown.git",
   "scripts": {
