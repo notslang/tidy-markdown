@@ -21,10 +21,10 @@
     "should": "^4.0.4"
   },
   "keywords": [
-    "pretty",
     "markdown",
-    "reformat",
     "parse",
+    "pretty",
+    "reformat",
     "styleguide"
   ],
   "license": "GPL-3.0",
