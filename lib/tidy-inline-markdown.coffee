@@ -20,12 +20,18 @@ tidyInlineMarkdown = (token) ->
     .replace CODE_REGEX, (m, code) -> delimitCode(code, '`')
     .replace IMG_REGEX, (m, url='', alt='', title) ->
       if title?
-        url += " \"#{title.replace /\\|"/g, (m) -> "\\#{m}"}\""
+        title = title.replace /\\|"/g, (m) -> "\\#{m}"
+        url += " \"#{title}\""
       return "![#{alt}](#{url})"
     .replace LINK_REGEX, (m, url='', title, text='') ->
       if title?
-        url += " \"#{title.replace /\\|"/g, (m) -> "\\#{m}"}\""
-      return "[#{text}](#{url})"
+        title = title.replace /\\|"/g, (m) -> "\\#{m}"
+        url += " \"#{title}\""
+
+      if url is text and url isnt ''
+        return "<#{url}>"
+      else
+        return "[#{text}](#{url})"
 
   token.text = htmlEntities.decode(token.text)
   return token

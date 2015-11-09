@@ -260,6 +260,16 @@ describe 'inline grammar', ->
     tidyMdSnippet('[](#anchor)').should.equal('[](#anchor)')
     tidyMdSnippet('[]()').should.equal('[]()')
     tidyMdSnippet('[](#anchor "Title")').should.equal('[](#anchor "Title")')
+    tidyMdSnippet(
+      'https://github.com/slang800/tidy-markdown'
+    ).should.equal(
+      '<https://github.com/slang800/tidy-markdown>'
+    )
+    tidyMdSnippet(
+      '<https://github.com/slang800/tidy-markdown>'
+    ).should.equal(
+      '<https://github.com/slang800/tidy-markdown>'
+    )
 
   it 'should handle images', ->
     tidyMdSnippet('![text](image.jpg)').should.equal('![text](image.jpg)')
