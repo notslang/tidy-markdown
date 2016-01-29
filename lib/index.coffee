@@ -156,8 +156,9 @@ module.exports = (dirtyMarkdown, options = {}) ->
     token.nesting ?= []
     switch token.type
       when 'heading'
-        if previousToken? and previousToken.type isnt 'heading' then out.push ''
+        if previousToken? then out.push ''
         out.push stringRepeat('#', token.depth) + ' ' + token.text
+        out.push ''
       when 'paragraph'
         if previousToken?.type in ['paragraph', 'list_item', 'text']
           out.push ''
@@ -166,7 +167,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
         )
       when 'text', 'list_item'
         if previousToken? and token.type is 'list_item' and
-           (previousToken.nesting.length > token.nesting.length or
+           (previousToken.nesting.length isnt token.nesting.length or
            (previousToken.type is 'paragraph' and
            previousToken.nesting?.length >= token.nesting.length))
 

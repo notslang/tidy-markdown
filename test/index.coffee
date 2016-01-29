@@ -13,7 +13,9 @@ describe 'headings', ->
       ###test
     ''').should.equal('''
       # test
+
       ## test
+
       ### test
     ''')
 
@@ -24,7 +26,9 @@ describe 'headings', ->
       ### test ###
     ''').should.equal('''
       # test
+
       ## test
+
       ### test
     ''')
 
@@ -36,6 +40,7 @@ describe 'headings', ->
       ----
     ''').should.equal('''
       # test
+
       ## test
     ''')
 
@@ -52,7 +57,9 @@ describe 'headings', ->
       ### test
     ''').should.equal('''
       # test
+
       ## test
+
       ## test
     ''')
 
@@ -64,9 +71,13 @@ describe 'headings', ->
       #### test
     ''').should.equal('''
       # test
+
       ## test
+
       ### test
+
       ## test
+
       ### test
     ''')
 
@@ -78,8 +89,11 @@ describe 'headings', ->
       #### test
     ''').should.equal('''
       # test
+
       ## test
+
       # test
+
       ## test
     ''')
 
@@ -94,8 +108,11 @@ describe 'headings', ->
       ensureFirstHeaderIsH1: false
     ).should.equal('''
       ### test
+
       #### test
+
       ### test
+
       #### test
     ''')
 
@@ -109,8 +126,11 @@ describe 'headings', ->
       ensureFirstHeaderIsH1: false
     ).should.equal('''
       ### test
+
       #### test
+
       ### test
+
       #### test
     ''')
 
@@ -180,6 +200,7 @@ describe 'lists', ->
     ''').should.equal('''
       - item
       - another item
+
         - sub-list item
         - sub-list another item
         - sub-list last item
@@ -199,10 +220,12 @@ describe 'lists', ->
       + asdfads
     ''').should.equal('''
       - adas
+
         - asdas
         - sdas
 
       - sdfsdas
+
         - sddfasdfdfs
         - sdfafasdfsa
 
@@ -221,11 +244,13 @@ describe 'lists', ->
       2. blah
     ''').should.equal('''
       # H1 header
+
       1. blah
       2. blah
       3. blah
 
       # another H1  header
+
       1. blah
       2. blah
     ''')
