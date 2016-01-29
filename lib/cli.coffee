@@ -1,6 +1,6 @@
-tidyMarkdown = require './'
-packageInfo = require('../package')
 ArgumentParser = require('argparse').ArgumentParser
+packageInfo = require '../package'
+tidyMarkdown = require './'
 
 argparser = new ArgumentParser(
   version: packageInfo.version
