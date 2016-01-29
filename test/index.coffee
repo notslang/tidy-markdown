@@ -423,12 +423,8 @@ describe 'front-matter', ->
 describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
-      try
-        tidyMd(
-          fs.readFileSync("./test/cases/#{file}", encoding: 'utf8')
-        ).should.equal(
-          fs.readFileSync("./test/expected/#{file}", encoding: 'utf8')
-        )
-      catch e
-        e.showDiff = false
-        throw e
+      tidyMd(
+        fs.readFileSync("./test/cases/#{file}", encoding: 'utf8')
+      ).should.equal(
+        fs.readFileSync("./test/expected/#{file}", encoding: 'utf8')
+      )
