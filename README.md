@@ -28,7 +28,9 @@ Or using a file:
 ```bash
 $ tidy-markdown < ./ugly-markdown
 # Some markdown
+
 Lorem ipsum dolor adipiscing
+
 - one
 - two
 - three
@@ -83,7 +85,9 @@ which outputs:
 
 ```markdown
 # Some markdown
+
 Lorem ipsum dolor adipiscing
+
 - one
 - two
 - three
