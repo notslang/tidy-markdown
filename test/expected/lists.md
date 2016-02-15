@@ -1,6 +1,8 @@
 - one
+
   - one
   - two
+
     - one
     - two
     - three
@@ -9,17 +11,22 @@
 
   - three
   - four
+
     1. one
     2. two
+
       1. two
+
         1. two
         2. three
 
       2. three
+
         1. two
         2. three
 
     3. three
+
       - two
       - three
       - four
@@ -44,6 +51,7 @@
 - five
 
 this is a paragraph after the list
+
 1. two
 2. three
   > this is a blockquote in the list
