@@ -6,6 +6,9 @@ tidyMd = require '../lib'
 tidyMdSnippet = (text, options) -> tidyMd(text, options).trimRight()
 
 describe 'headings', ->
+  it 'should convert header tags', ->
+    tidyMdSnippet('<h1>test</h1>').should.equal('# test')
+
   it 'should fix spaces between heading and text', ->
     tidyMdSnippet('''
       #test
@@ -323,6 +326,13 @@ describe 'inline grammar', ->
   it 'should handle bold text', ->
     tidyMdSnippet('**bold**').should.equal('**bold**')
     tidyMdSnippet('__bold__').should.equal('**bold**')
+
+  it 'should convert <em> tags', ->
+    tidyMdSnippet(
+      'some <em>italic</em> text'
+    ).should.equal(
+      'some _italic_ text'
+    )
 
   it 'should handle italic text', ->
     tidyMdSnippet('*italic*').should.equal('_italic_')
