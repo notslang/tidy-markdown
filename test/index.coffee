@@ -248,7 +248,7 @@ describe 'lists', ->
       2. blah
       3. blah
 
-      # another H1  header
+      # another H1 header
       1. blah
       2. blah
     ''').should.equal('''
@@ -258,7 +258,7 @@ describe 'lists', ->
       2. blah
       3. blah
 
-      # another H1  header
+      # another H1 header
 
       1. blah
       2. blah
