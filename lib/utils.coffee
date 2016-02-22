@@ -1,3 +1,6 @@
+Entities = require('html-entities').AllHtmlEntities
+_ = require 'lodash'
+
 ###*
  * @param {String} x The string to be repeated
  * @param {String} n Number of times to repeat the string
@@ -13,17 +16,6 @@ stringRepeat = (x, n) ->
     else
       break
   return s
-
-###*
- * Find the length of the longest string in an array
- * @param {String[]} array Array of strings
-###
-longestStringInArray = (array) ->
-  longest = 0
-  for str in array
-    len = str.length
-    if len > longest then longest = len
-  return longest
 
 ###*
  * Wrap code with delimiters
@@ -42,4 +34,39 @@ delimitCode = (code, delimiter) ->
   if code[-1...] is '`' then code += ' ' # add ending space
   return delimiter + code + delimiter
 
-module.exports = {stringRepeat, longestStringInArray, delimitCode}
+nodeType = (node) ->
+  if node.nodeName is '#text'
+    3 # text
+  else if node.tagName?
+    1 # element
+  else
+    throw new Error('cannot detect nodeType')
+
+  # cdata: 4
+  # comment: 8
+
+getAttribute = (node, attribute) ->
+  _.find(node.attrs, name: attribute)?.value or null
+
+cleanText = (text) ->
+  text = text
+    .replace /\s+/g, ' ' # excessive whitespace & linebreaks
+    .replace /\u2014/g, '--' # em-dashes
+    .replace /\u2018|\u2019/g, '\'' # opening/closing singles & apostrophes
+    .replace /\u201c|\u201d/g, '"' # opening/closing doubles
+    .replace /\u2026/g, '...' # ellipses
+
+  decodeHtmlEntities(text).trim()
+
+htmlEntities = new Entities()
+decodeHtmlEntities = (text) ->
+  htmlEntities.decode(text)
+
+module.exports = {
+  cleanText
+  decodeHtmlEntities
+  delimitCode
+  getAttribute
+  nodeType
+  stringRepeat
+}

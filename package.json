@@ -12,8 +12,10 @@
     "html-entities": "^1.0.10",
     "indent": "0.0.2",
     "js-yaml": "^3.2.7",
+    "lodash": "^4.5.0",
     "marked": "0.3.2",
-    "pad": "0.0.5"
+    "pad": "0.0.5",
+    "parse5": "^2.1.5"
   },
   "devDependencies": {
     "coffee-script": "^1.10.0",

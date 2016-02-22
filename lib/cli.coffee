@@ -25,5 +25,6 @@ process.stdin.on 'readable', ->
   buffer = ''
   while null != (chunk = process.stdin.read())
     buffer += chunk
-  process.stdout.write tidyMarkdown(buffer, argv)
+  if buffer isnt ''
+    process.stdout.write tidyMarkdown(buffer, argv)
   return

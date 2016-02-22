@@ -1,13 +1,21 @@
 fm = require 'front-matter'
-indent = require 'indent'
 marked = require 'marked'
-pad = require 'pad'
 yaml = require 'js-yaml'
+{parseFragment, serialize, treeAdapters} = require 'parse5'
 
-{stringRepeat, longestStringInArray, delimitCode} = require './utils'
-preprocessAST = require './preprocess'
-tidyInlineMarkdown = require './tidy-inline-markdown'
+blocks = require './block-tags'
+converters = require './converters'
+voids = require './void-tags'
+{cleanText, decodeHtmlEntities, nodeType} = require './utils'
+{stringRepeat, delimitCode} = require './utils'
 
+treeAdapter = treeAdapters.default
+
+###*
+ * Utilities
+###
+isBlock = (node) -> node.nodeName in blocks
+isVoid = (node) -> node.nodeName in voids
 
 ###*
  * Some people accidently skip levels in their headers (like jumping from h1 to
@@ -17,34 +25,34 @@ tidyInlineMarkdown = require './tidy-inline-markdown'
    will try to preserve them. For example, "h1, h3, h3" becomes "h1, h2, h2"
    rather than "h1, h2, h3".
 ###
-fixHeaders = (ast, ensureFirstHeaderIsH1) ->
-  i = 0
+fixHeaders = (dom, ensureFirstHeaderIsH1) ->
+  topLevelHeaders = [] # the headers that aren't nested in any other elements
+  for child in dom.childNodes
+    if /h[0-6]/.test child.nodeName
+      topLevelHeaders.push child
+
+  # there are no headers in this document, so skip
+  if topLevelHeaders.length is 0 then return
 
   # by starting at 0, we force the first header to be an h1 (or an h0, but that
   # doesn't exist)
   lastHeaderDepth = 0
 
   if not ensureFirstHeaderIsH1
-    e = 0
-    while e < ast.length
-      if ast[e].type isnt 'heading'
-        e++ # keep going
-      else
-        # we found the first header, set the depth to `firstHeaderDepth - 1` so
-        # the rest of the function will act as though that was the root
-        lastHeaderDepth = ast[e].depth - 1
-        break
+    # set the depth to `firstHeaderDepth - 1` so the rest of the function will
+    # act as though that was the root
+    lastHeaderDepth = topLevelHeaders[0].nodeName[1] - 1
 
   # we track the rootDepth to ensure that no headers go "below" the level of the
   # first one. for example h3, h4, h2 would need to be corrected to h3, h4, h3.
   # this is really only needed when the first header isn't an h1.
   rootDepth = lastHeaderDepth + 1
 
-  while i < ast.length
-    if ast[i].type isnt 'heading'
-      # nothing
-    else if rootDepth <= ast[i].depth <= lastHeaderDepth + 1
-      lastHeaderDepth = ast[i].depth
+  i = 0
+  while i < topLevelHeaders.length
+    headerDepth = parseInt topLevelHeaders[i].nodeName[1]
+    if rootDepth <= headerDepth <= lastHeaderDepth + 1
+      lastHeaderDepth = headerDepth # header follows all rules, move on to next
     else
       # find all the children of that header and cut them down by the amount in
       # the gap between the offending header and the last good header. For
@@ -54,151 +62,190 @@ fixHeaders = (ast, ensureFirstHeaderIsH1) ->
       # if the issue is that the offending header is below the root header, then
       # the same procedure is applied, but *increasing* the offending header &
       # children to the nearest acceptable level.
-      e = i
-      if ast[i].depth <= rootDepth
-        gap = ast[i].depth - rootDepth
+      if headerDepth <= rootDepth
+        gap = headerDepth - rootDepth
       else
-        gap = ast[i].depth - (lastHeaderDepth + 1)
-      parentDepth = ast[i].depth
-      while e < ast.length
-        if ast[e].type isnt 'heading'
-          # nothing
-        else if ast[e].depth >= parentDepth
-          ast[e].depth -= gap
+        gap = headerDepth - (lastHeaderDepth + 1)
+
+      for e in [i...topLevelHeaders.length]
+        childHeaderDepth = parseInt topLevelHeaders[e].nodeName[1]
+        if childHeaderDepth >= headerDepth
+          topLevelHeaders[e].nodeName = 'h' + (childHeaderDepth - gap)
         else
           break
-        e++
 
       # don't let it increment `i`. we need to get the offending header checked
       # again so it sets the new `lastHeaderDepth`
       continue
     i++
-  return ast
+  return
 
-formatTable = (token) ->
-  out = []
-  for i in [0...token.header.length]
-    col = [token.header[i]]
-    for j in [0...token.cells.length]
-      token.cells[j][i] = (
-        if token.cells[j][i]?
-          # https://github.com/chjj/marked/issues/473
-          token.cells[j][i].trim()
-        else
-          ''
-      )
-      col.push token.cells[j][i]
+###*
+ * Flattens DOM tree into single array
+###
+bfsOrder = (node) ->
+  inqueue = [node]
+  outqueue = []
+  while inqueue.length > 0
+    elem = inqueue.shift()
+    outqueue.push elem
+    for child in elem.childNodes
+      if nodeType(child) is 1 then inqueue.push child
 
-    colWidth = longestStringInArray(col)
-    token.header[i] = pad(token.header[i], colWidth)
+  outqueue.shift() # remove root node
+  outqueue
 
-    alignment = token.align[i]
-    token.align[i] = (
-      switch alignment
-        when null then pad('', colWidth, '-')
-        when 'left' then ':' + pad('', colWidth - 1, '-')
-        when 'center' then ':' + pad('', colWidth - 2, '-') + ':'
-        when 'right' then pad('', colWidth - 1, '-') + ':'
+###*
+ * Contructs a Markdown string of replacement text for a given node
+###
+getContent = (node) ->
+  text = ''
+  for child in node.childNodes
+    text += (
+      switch nodeType(child)
+        when 1
+          child._replacement
+        when 3
+          if node.nodeName in ['code', 'pre']
+            decodeHtmlEntities(child.value)
+          else
+            cleanText(child.value)
     )
+  text
 
-    for j in [0...token.cells.length]
-      token.cells[j][i] = (
-        if alignment is 'right'
-          pad(colWidth, token.cells[j][i])
-        else
-          pad(token.cells[j][i], colWidth)
-      )
+###*
+ * Returns the HTML string of an element with its contents converted
+###
+outer = (node, content) ->
+  serialize(node).replace '><', '>' + content + '<'
 
-  # trimRight is to remove any trailing whitespace added by the padding
-  if token.header.length > 1
-    out.push token.header.join(' | ').trimRight()
-    out.push token.align.join(' | ')
-
-    for row in token.cells
-      out.push row.join(' | ').trimRight()
+canConvert = (node, filter) ->
+  if typeof filter is 'string'
+    return filter is node.nodeName
+  if Array.isArray(filter)
+    return node.nodeName.toLowerCase() in filter
+  else if typeof filter is 'function'
+    return filter.call(toMarkdown, node)
   else
-    # use a leading pipe for single col tables, otherwise the output won't
-    # render as a table
-    out.push '| ' + token.header[0].trimRight()
-    out.push '| ' + token.align[0]
+    throw new TypeError('`filter` needs to be a string, array, or function')
+  return
 
-    for row in token.cells
-      out.push '| ' + row[0].trimRight()
+isFlankedByWhitespace = (side, node) ->
+  isFlanked = undefined
+  if side is 'left'
+    sibling = node.previousSibling
+    regExp = RegExp(' $')
+  else
+    sibling = node.nextSibling
+    regExp = /^ /
+  if sibling
+    if nodeType(sibling) is 3
+      isFlanked = regExp.test(sibling.nodeValue)
+    else if nodeType(sibling) is 1 and not isBlock(sibling)
+      isFlanked = regExp.test(sibling.textContent)
+  isFlanked
 
-  out.push '' # newline after tables
-  return out
+flankingWhitespace = (node) ->
+  leading = ''
+  trailing = ''
+  if not isBlock(node)
+    hasLeading = /^[ \r\n\t]/.test(node.innerHTML)
+    hasTrailing = /[ \r\n\t]$/.test(node.innerHTML)
+    if hasLeading and not isFlankedByWhitespace('left', node)
+      leading = ' '
+    if hasTrailing and not isFlankedByWhitespace('right', node)
+      trailing = ' '
+  {
+    leading: leading
+    trailing: trailing
+  }
 
-module.exports = (dirtyMarkdown, options = {}) ->
+###
+ * Finds a Markdown converter, gets the replacement, and sets it on
+ * `_replacement`
+###
+process = (node) ->
+  content = getContent(node)
+  # Remove blank nodes
+  if not isVoid(node) and node.nodeName isnt 'a' and /^\s*$/i.test(content)
+    node._replacement = ''
+    return
+
+  for converter in converters
+    if canConvert(node, converter.filter)
+      if typeof converter.replacement isnt 'function'
+        throw new TypeError(
+          '`replacement` needs to be a function that returns a string'
+        )
+      whitespace = flankingWhitespace(node)
+      if whitespace.leading or whitespace.trailing
+        content = content.trim()
+      replacement = (
+        whitespace.leading +
+        converter.replacement.call(toMarkdown, content, node) +
+        whitespace.trailing
+      )
+      break
+
+  node._replacement = replacement
+  return
+
+toMarkdown = (input, options = {}) ->
   options.ensureFirstHeaderIsH1 ?= true
 
-  out = []
+  if typeof input isnt 'string'
+    throw new TypeError("#{input} is not a string")
+  # Escape potential ol triggers
+  input = input.replace(/(\d+)\. /g, '$1\\. ')
+  clone = parseFragment(input)
+  fixHeaders(clone, options.ensureFirstHeaderIsH1)
+  nodes = bfsOrder(clone)
+  # remove whitespace text nodes
+  for node in nodes
+    emptyChildren = []
+    for child in node.childNodes
+      if child.nodeName is '#text' and child.value.trim() is ''
+        emptyChildren.push(child)
+    for child in emptyChildren
+      treeAdapter.detachNode child
+
+  # Process nodes in reverse (so deepest child elements are first).
+  for node in nodes by -1
+    process node
+
+  # remove this section because it fucks up code blocks with extra space in them
+  getContent(clone).trimRight().replace(
+    /\n{3,}/g, '\n\n'
+  ).replace(
+    /^\n+/, ''
+  ) + '\n'
+
+toMarkdown.isBlock = isBlock
+toMarkdown.outer = outer
+
+module.exports = (dirtyMarkdown, options) ->
+  out = ''
 
   # handle yaml front-matter
   content = fm(dirtyMarkdown)
   if Object.keys(content.attributes).length isnt 0
-    out.push '---', yaml.safeDump(content.attributes).trim(), '---\n'
+    out += '---\n' + yaml.safeDump(content.attributes).trim() + '\n---\n\n'
 
+  html = marked(content.body)
+  out += toMarkdown(html, options)
+
+  ###
   ast = marked.lexer(content.body)
 
   # see issue: https://github.com/chjj/marked/issues/472
   links = ast.links
-
-  previousToken = undefined
-
-  # remove all the `space` and `list_end` tokens - they're useless
-  ast = ast.filter (token) -> token.type not in ['space', 'list_end']
-  ast = preprocessAST(ast)
-  ast = fixHeaders(ast, options.ensureFirstHeaderIsH1)
-
-  for token in ast
-    token.indent ?= ''
-    token.nesting ?= []
-    switch token.type
-      when 'heading'
-        if previousToken? then out.push ''
-        out.push stringRepeat('#', token.depth) + ' ' + token.text
-        out.push ''
-      when 'paragraph'
-        if previousToken?.type in ['paragraph', 'list_item', 'text']
-          out.push ''
-        out.push(
-          token.indent + tidyInlineMarkdown(token).text.replace /\n/g, ' '
-        )
-      when 'text', 'list_item'
-        if previousToken? and token.type is 'list_item' and
-           (previousToken.nesting.length isnt token.nesting.length or
-           (previousToken.type is 'paragraph' and
-           previousToken.nesting?.length >= token.nesting.length))
-
-          out.push ''
-        out.push token.indent + tidyInlineMarkdown(token).text
-      when 'code'
-        token.lang ?= ''
-        token.text = delimitCode("#{token.lang}\n#{token.text}\n", '```')
-        out.push '', indent(token.text, token.indent), ''
-      when 'table'
-        if previousToken? then out.push ''
-        out.push(formatTable(token)...)
-
-      when 'hr'
-        if previousToken? then out.push ''
-        out.push token.indent + stringRepeat('-', 80), ''
-
-      when 'html'
-        out.push line for line in token.text.split('\n')
-
-      else
-        throw new Error("Unknown Token: #{token.type}")
-
-    previousToken = token
 
   if Object.keys(links).length > 0 then out.push ''
   for id, link of links
     optionalTitle = if link.title then " \"#{link.title}\"" else ''
     out.push "[#{id}]: #{link.href}#{optionalTitle}"
 
-  out.push '' # trailing newline
-
   # filter multiple sequential linebreaks
   out = out.filter (val, i, arr) -> not (val is '' and arr[i - 1] is '')
-  return out.join('\n')
+  ###
+  return out
