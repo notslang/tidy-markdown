@@ -315,6 +315,13 @@ describe 'inline grammar', ->
   it 'should allow inline html to pass through', ->
     tidyMdSnippet('<span>blag</span>').should.equal('<span>blag</span>')
 
+  it 'should normalize quotes', ->
+    tidyMdSnippet(
+      'highly “opinionated” guide'
+    ).should.equal(
+      'highly "opinionated" guide'
+    )
+
 describe 'tables', ->
   it 'should handle tables', ->
     tidyMd('''
