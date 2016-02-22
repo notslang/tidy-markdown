@@ -268,28 +268,43 @@ describe 'inline grammar', ->
     tidyMdSnippet('*italic*').should.equal('_italic_')
     tidyMdSnippet('_italic_').should.equal('_italic_')
 
-  it 'should handle code', ->
+  it 'should convert code tags', ->
     tidyMdSnippet('<code>code</code>').should.equal('`code`')
+
+  it 'should handle code', ->
     tidyMdSnippet('`code`').should.equal('`code`')
+    tidyMdSnippet('the `<del>` tag').should.equal('the `<del>` tag')
+
+  it 'should remove whitespace surrounding inline code', ->
     tidyMdSnippet('` code `').should.equal('`code`')
+
+  it 'should handle code containing backticks', ->
     tidyMdSnippet('```blah` ``').should.equal('`` `blah` ``')
     tidyMdSnippet('` ``blah`` `').should.equal('` ``blah`` `')
 
-  it 'should handle strikethrough', ->
+  it 'should convert strikethrough tags', ->
     tidyMdSnippet('<del>code</del>').should.equal('~~code~~')
+
+  it 'should handle strikethrough', ->
     tidyMdSnippet('~~code~~').should.equal('~~code~~')
 
   it 'should handle links', ->
     tidyMdSnippet('[text](#anchor)').should.equal('[text](#anchor)')
     tidyMdSnippet('[text]( #anchor )').should.equal('[text](#anchor)')
     tidyMdSnippet('[](#anchor)').should.equal('[](#anchor)')
-    tidyMdSnippet('[]()').should.equal('[]()')
     tidyMdSnippet('[](#anchor "Title")').should.equal('[](#anchor "Title")')
+
+  it 'should handle empty links', ->
+    tidyMdSnippet('[]()').should.equal('[]()')
+
+  it 'should handle unmarked links', ->
     tidyMdSnippet(
       'https://github.com/slang800/tidy-markdown'
     ).should.equal(
       '<https://github.com/slang800/tidy-markdown>'
     )
+
+  it 'should handle shorthand links', ->
     tidyMdSnippet(
       '<https://github.com/slang800/tidy-markdown>'
     ).should.equal(
