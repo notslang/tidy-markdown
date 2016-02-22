@@ -255,6 +255,66 @@ describe 'lists', ->
       2. blah
     ''')
 
+describe 'code blocks', ->
+  it 'should handle fenced code', ->
+    tidyMdSnippet('''
+      # H1 header
+      ```
+      this is some code
+      ```
+
+      # another H1 header
+      ```
+
+        this is some indented code w/ a trailing & leading newline
+
+      ```
+    ''').should.equal('''
+      # H1 header
+
+      ```
+      this is some code
+      ```
+
+      # another H1 header
+
+      ```
+
+        this is some indented code w/ a trailing & leading newline
+
+      ```
+    ''')
+
+  it 'should handle fenced code with a specified language', ->
+    tidyMdSnippet('''
+      ```javascript
+      function () {this.isSomeJavaScript()}
+      ```
+    ''').should.equal('''
+      ```javascript
+      function () {this.isSomeJavaScript()}
+      ```
+    ''')
+
+  it 'should allow code to have excessive linebreaks', ->
+    tidyMdSnippet('''
+      ```
+      this is some code...
+
+
+
+      ...with several linebreaks in it
+      ```
+    ''').should.equal('''
+      ```
+      this is some code...
+
+
+
+      ...with several linebreaks in it
+      ```
+    ''')
+
 describe 'inline grammar', ->
   it 'should handle special characters', ->
     tidyMdSnippet('2 < 4').should.equal('2 < 4')
