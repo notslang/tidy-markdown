@@ -140,6 +140,9 @@ describe 'headings', ->
   it 'should strip trailing whitespace', ->
     tidyMdSnippet('#test ').should.equal('# test')
 
+  it 'should strip excessive whitespace', ->
+    tidyMdSnippet('#test   header').should.equal('# test header')
+
 describe 'paragraphs', ->
   it 'should get rid of mid-paragraph linebreaks', ->
     tidyMdSnippet(
