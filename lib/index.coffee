@@ -11,12 +11,11 @@ tidyInlineMarkdown = require './tidy-inline-markdown'
 
 ###*
  * Some people accidently skip levels in their headers (like jumping from h1 to
- * h3), which screws up things like tables of contents. This function fixes
- * that.
-
+   h3), which screws up things like tables of contents. This function fixes
+   that.
  * The algorithm assumes that relations between nearby headers are correct and
- * will try to preserve them. For example, "h1, h3, h3" becomes "h1, h2, h2"
- * rather than "h1, h2, h3".
+   will try to preserve them. For example, "h1, h3, h3" becomes "h1, h2, h2"
+   rather than "h1, h2, h3".
 ###
 fixHeaders = (ast, ensureFirstHeaderIsH1) ->
   i = 0

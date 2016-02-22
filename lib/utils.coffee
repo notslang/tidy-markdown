@@ -34,9 +34,8 @@ longestStringInArray = (array) ->
 ###
 delimitCode = (code, delimiter) ->
   while ///([^`]|^)#{delimiter}([^`]|$)///.test code
-    # make sure that the delimiter isn't being used inside of the text. if
-    # it is, we need to increase the number of times the delimiter is
-    # repeated.
+    # Make sure that the delimiter isn't being used inside of the text. If it
+    # is, we need to increase the number of times the delimiter is repeated.
     delimiter += '`'
 
   if code[0] is '`' then code = ' ' + code # add starting space
