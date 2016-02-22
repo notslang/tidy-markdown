@@ -369,10 +369,10 @@ describe 'tables', ->
       Moogles                   | MogNet          | FFIII
       Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
     ''').should.equal('''
-      Group                     | Domain          | First Appearance
+                          Group |     Domain      | First Appearance
       ------------------------: | :-------------: | :---------------
-                         ShinRa | Mako Reactors   | FFVII
-                        Moogles | MogNet          | FFIII
+                         ShinRa |  Mako Reactors  | FFVII
+                        Moogles |     MogNet      | FFIII
       Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
 
     ''')
@@ -384,10 +384,10 @@ describe 'tables', ->
                         Moogles |          MogNet | FFIII
       Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
     ''').should.equal('''
-      Group                     | Domain          | First Appearance
+      Group                     |     Domain      | First Appearance
       ------------------------- | :-------------: | :---------------
-      ShinRa                    | Mako Reactors   | FFVII
-      Moogles                   | MogNet          | FFIII
+      ShinRa                    |  Mako Reactors  | FFVII
+      Moogles                   |     MogNet      | FFIII
       Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
 
     ''')
