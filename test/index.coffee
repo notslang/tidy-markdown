@@ -142,8 +142,11 @@ describe 'headings', ->
 
 describe 'paragraphs', ->
   it 'should get rid of mid-paragraph linebreaks', ->
-    tidyMdSnippet('Lorem ipsum dolor adipiscing\nquis massa lorem')
-      .should.equal('Lorem ipsum dolor adipiscing quis massa lorem')
+    tidyMdSnippet(
+      'Lorem ipsum dolor adipiscing\nquis massa lorem'
+    ).should.equal(
+      'Lorem ipsum dolor adipiscing quis massa lorem'
+    )
 
   it 'should only separate paragraphs with one blank line', ->
     tidyMdSnippet('''
@@ -520,7 +523,6 @@ describe 'html', ->
       </dl>
     ''')
 
-
 describe 'front-matter', ->
   it 'should handle front-matter', ->
     tidyMdSnippet('''
@@ -535,7 +537,6 @@ describe 'front-matter', ->
 
       My content
     ''')
-
 
 describe 'full documents', ->
   it 'should reformat to match expected', ->
