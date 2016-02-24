@@ -450,6 +450,21 @@ describe 'tables', ->
 
     ''')
 
+  it 'should handle tables with blank values', ->
+    tidyMd('''
+      0,0 | 0,1 | 0,2
+      --- | --- | ---
+      1,0 |     | 1,2
+          | 2,1 |
+
+    ''').should.equal('''
+      0,0 | 0,1 | 0,2
+      --- | --- | ---
+      1,0 |     | 1,2
+          | 2,1 |
+
+    ''')
+
   it 'should handle tables with missing values', ->
     tidyMd('''
       Name |  Type |  Description | Choices
@@ -459,7 +474,24 @@ describe 'tables', ->
     ''').should.equal('''
       Name               | Type    | Description      | Choices
       ------------------ | ------- | ---------------- | -------
-      creator_license_id | unknown | License which... |
+      creator_license_id | unknown | License which...
+
+    ''')
+
+  it 'should handle tables with missing values (2)', ->
+    tidyMd('''
+      Name |  Type |  Description | Choices
+      :----| :----: |  ------------- | ------:
+      0,0 |  0,1 | 0,2
+          |  1,1 | 1,2 |     | |
+      2,0 |  2,1 |     | 2,3
+
+    ''').should.equal('''
+      Name | Type | Description | Choices
+      :--- | :--: | ----------- | ------:
+      0,0  | 0,1  | 0,2
+           | 1,1  | 1,2         |         |  |
+      2,0  | 2,1  |             |     2,3
 
     ''')
 

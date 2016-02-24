@@ -23,6 +23,19 @@ getCellAlignment = (node) ->
     /text-align:\s*(right|left|center)/
   )?[1] or null
 
+###*
+ * Join an array of cells (columns) from a single row.
+ * @param {String[]} columns
+ * @return {String} The joined row.
+###
+joinColumns = (columns) ->
+  if columns.length > 1
+    columns.join ' | '
+  else
+    # use a leading pipe for single column tables, otherwise the output won't
+    # render as a table
+    '| ' + columns[0]
+
 extractColumns = (row) ->
   columns = []
   alignments = []
@@ -38,7 +51,7 @@ extractColumns = (row) ->
   return {columns, alignments}
 
 extractRows = (node) ->
-  alignments = null
+  alignments = []
   rows = []
   inqueue = [node]
   while inqueue.length > 0
@@ -51,13 +64,24 @@ extractRows = (node) ->
         # alignments in markdown are column-wide, so after the first row we just
         # want to make sure there aren't any conflicting values within a single
         # column
-        if not alignments?
-          alignments = row.alignments
-        else if not _.isEqual(alignments, row.alignments)
-          throw new Error("Alignment in a table column is not consistent")
+        for alignment, i in row.alignments
+          if i + 1 > alignments.length
+            # if all previous rows were shorter, or if we are at the beginning
+            # of the table, then we need to populate the alignments array
+            alignments.push alignment
+          if alignment isnt alignments[i]
+            throw new Error(
+              "Alignment in a table column #{i} is not consistent"
+            )
 
       else if nodeType(child) is 1
         inqueue.push child
+
+  # when there are more alignments than headers (from columns that extend beyond
+  # the headers), and those alignments aren't doing anything, it looks better to
+  # remove them
+  while alignments.length > rows[0].length and alignments[-1...][0] is null
+    alignments.pop()
 
   return {alignments, rows}
 
@@ -79,14 +103,7 @@ formatRow = (row, alignments, columnWidths) ->
     )
 
   # trimRight is to remove any trailing whitespace added by the padding
-  (
-    if row.length > 1
-      row.join ' | '
-    else
-      # use a leading pipe for single column tables, otherwise the output won't
-      # render as a table
-      '| ' + row[0]
-  ).trimRight()
+  joinColumns(row).trimRight()
 
 formatHeaderSeparator = (alignments, columnWidths) ->
   columns = []
@@ -99,17 +116,14 @@ formatHeaderSeparator = (alignments, columnWidths) ->
         when 'right' then pad('', columnWidths[i] - 1, '-') + ':'
         when null then pad('', columnWidths[i], '-')
     )
-  if totalCols > 1
-    columns.join(' | ')
-  else
-    '| ' + columns[0]
+  joinColumns(columns)
 
 getColumnWidths = (rows) ->
   columnWidths = []
   totalCols = rows[0].length
   for i in [0...totalCols]
     column = []
-    column.push row[i] for row in rows
+    column.push row[i] or '' for row in rows
     columnWidths.push longestStringInArray(column)
   return columnWidths
 
