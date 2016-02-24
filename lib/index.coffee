@@ -94,7 +94,8 @@ getContent = (node) ->
 
   text = ''
   for child in node.childNodes
-    text += (
+    if child.nodeName is 'br' then text = text.trimRight()
+    childText = (
       switch nodeType(child)
         when 1
           child._replacement
@@ -106,6 +107,11 @@ getContent = (node) ->
           else
             cleanText(child.value)
     )
+    if nextTrimLeft
+      childText = childText.trimLeft()
+      nextTrimLeft = false
+    if child.nodeName is 'br' then nextTrimLeft = true
+    text += childText
   text
 
 canConvert = (node, filter) ->
@@ -133,7 +139,6 @@ getNextSibling = (node) ->
   node.parentNode.childNodes[getNodeIndex(node) + 1]
 
 isFlankedByWhitespace = (side, node) ->
-  isFlanked = false
   if side is 'left'
     sibling = getPreviousSibling(node)
     regExp = /\s$/
@@ -142,8 +147,9 @@ isFlankedByWhitespace = (side, node) ->
     regExp = /^\s/
 
   if sibling and not isBlock(sibling)
-    isFlanked = regExp.test getContent(sibling)
-  isFlanked
+    regExp.test getContent(sibling)
+  else
+    false
 
 flankingWhitespace = (node) ->
   leading = ''
@@ -231,7 +237,6 @@ module.exports = (dirtyMarkdown, options = {}) ->
 
   # Escape potential ol triggers
   html = html.replace(/(\d+)\. /g, '$1\\. ')
-
   root = parseFragment(html)
 
   # remove empty nodes that are direct children of the root first

@@ -54,6 +54,11 @@ module.exports = [
     replacement: (content) -> "**#{content}**"
   }
   {
+    filter: 'br'
+    surroundingBlankLines: false
+    replacement: -> '<br>\n'
+  }
+  {
     filter: 'a'
     surroundingBlankLines: false
     replacement: (content, node) ->

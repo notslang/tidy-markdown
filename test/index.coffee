@@ -152,6 +152,22 @@ describe 'paragraphs', ->
       'Lorem ipsum dolor adipiscing quis massa lorem'
     )
 
+  it 'should handle real linebreaks', ->
+    tidyMdSnippet(
+      'Lorem ipsum dolor adipiscing  \nquis massa lorem'
+    ).should.equal('''
+      Lorem ipsum dolor adipiscing<br>
+      quis massa lorem
+    ''')
+
+  it 'should handle real linebreaks (2)', ->
+    tidyMdSnippet(
+      'Lorem ipsum dolor adipiscing <br/> quis massa lorem'
+    ).should.equal('''
+      Lorem ipsum dolor adipiscing<br>
+      quis massa lorem
+    ''')
+
   it 'should only separate paragraphs with one blank line', ->
     tidyMdSnippet('''
       Lorem ipsum dolor adipiscing
@@ -436,17 +452,17 @@ describe 'inline grammar', ->
 describe 'tables', ->
   it 'should handle tables', ->
     tidyMd('''
-      Group                     | Domain          | First Appearance
-      ------------------------- | --------------- | ----------------
-      ShinRa                    | Mako Reactors   | FFVII
-      Moogles                   | MogNet          | FFIII
-      Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+      Group                     | Domain                   | First Appearance
+      ------------------------- | ------------------------ | ----------------
+      `ShinRa`                  | Mako Reactors            | FFVII
+      Moogles                   | [MogNet](http://mog.net) | FFIII
+      Vana'diel Chocobo Society | Chocobo Raising          | FFXI:TOAU
     ''').should.equal('''
-      Group                     | Domain          | First Appearance
-      ------------------------- | --------------- | ----------------
-      ShinRa                    | Mako Reactors   | FFVII
-      Moogles                   | MogNet          | FFIII
-      Vana'diel Chocobo Society | Chocobo Raising | FFXI:TOAU
+      Group                     | Domain                   | First Appearance
+      ------------------------- | ------------------------ | ----------------
+      `ShinRa`                  | Mako Reactors            | FFVII
+      Moogles                   | [MogNet](http://mog.net) | FFIII
+      Vana'diel Chocobo Society | Chocobo Raising          | FFXI:TOAU
 
     ''')
 
