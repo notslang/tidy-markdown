@@ -1,6 +1,9 @@
 Entities = require('html-entities').AllHtmlEntities
 _ = require 'lodash'
 
+blocks = require './block-tags'
+voids = require './void-tags'
+
 ###*
  * @param {String} x The string to be repeated
  * @param {String} n Number of times to repeat the string
@@ -49,24 +52,32 @@ getAttribute = (node, attribute) ->
   _.find(node.attrs, name: attribute)?.value or null
 
 cleanText = (text) ->
-  text = text
+  decodeHtmlEntities(text)
     .replace /\s+/g, ' ' # excessive whitespace & linebreaks
     .replace /\u2014/g, '--' # em-dashes
     .replace /\u2018|\u2019/g, '\'' # opening/closing singles & apostrophes
     .replace /\u201c|\u201d/g, '"' # opening/closing doubles
     .replace /\u2026/g, '...' # ellipses
 
-  decodeHtmlEntities(text).trim()
-
 htmlEntities = new Entities()
 decodeHtmlEntities = (text) ->
   htmlEntities.decode(text)
+
+isBlock = (node) ->
+  if node.nodeName is 'code' and node.parentNode.nodeName is 'pre'
+    true # code tags in a pre are treated as blocks
+  else
+    node.nodeName in blocks
+
+isVoid = (node) -> node.nodeName in voids
 
 module.exports = {
   cleanText
   decodeHtmlEntities
   delimitCode
   getAttribute
+  isBlock
+  isVoid
   nodeType
   stringRepeat
 }

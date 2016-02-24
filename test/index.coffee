@@ -8,6 +8,7 @@ tidyMdSnippet = (text, options) -> tidyMd(text, options).trimRight()
 describe 'headings', ->
   it 'should convert header tags', ->
     tidyMdSnippet('<h1>test</h1>').should.equal('# test')
+    tidyMdSnippet('<h1> test </h1>').should.equal('# test')
 
   it 'should fix spaces between heading and text', ->
     tidyMdSnippet('''
@@ -177,6 +178,15 @@ describe 'blockquotes', ->
       > Donec sit amet nisl id sem consectetuer.
     ''')
 
+    tidyMdSnippet('''
+      > # header
+      > this is a paragraph containing `some code`.
+    ''').should.equal('''
+      > # header
+
+      > this is a paragraph containing `some code`.
+    ''')
+
 describe 'lists', ->
   it 'should normalize unordered lists', ->
     tidyMdSnippet('''
@@ -273,11 +283,11 @@ describe 'code blocks', ->
       ```
 
       # another H1 header
-      ```
+      <pre>
 
-        this is some indented code w/ a trailing & leading newline
+      this is some indented code w/ a trailing & leading newline
 
-      ```
+      </pre>
     ''').should.equal('''
       # H1 header
 
@@ -289,7 +299,7 @@ describe 'code blocks', ->
 
       ```
 
-        this is some indented code w/ a trailing & leading newline
+      this is some indented code w/ a trailing & leading newline
 
       ```
     ''')
@@ -339,6 +349,11 @@ describe 'inline grammar', ->
     ).should.equal(
       'some _italic_ text'
     )
+    tidyMdSnippet(
+      'some <em> italic </em> text'
+    ).should.equal(
+      'some _italic_ text'
+    )
 
   it 'should handle italic text', ->
     tidyMdSnippet('*italic*').should.equal('_italic_')
@@ -369,6 +384,11 @@ describe 'inline grammar', ->
     tidyMdSnippet('[text]( #anchor )').should.equal('[text](#anchor)')
     tidyMdSnippet('[](#anchor)').should.equal('[](#anchor)')
     tidyMdSnippet('[](#anchor "Title")').should.equal('[](#anchor "Title")')
+    tidyMdSnippet('[1]() [2]()').should.equal('[1]() [2]()')
+    tidyMdSnippet('[1]() [ 2 ]()').should.equal('[1]() [2]()')
+    tidyMdSnippet('[1]()[ 2 ]()').should.equal('[1]() [2]()')
+    tidyMdSnippet('[1]()[2]()').should.equal('[1]()[2]()')
+    tidyMdSnippet('[1]()\n[2]()').should.equal('[1]() [2]()')
 
   it 'should handle empty links', ->
     tidyMdSnippet('[]()').should.equal('[]()')

@@ -1,21 +1,12 @@
 fm = require 'front-matter'
 marked = require 'marked'
 yaml = require 'js-yaml'
-{parseFragment, serialize, treeAdapters} = require 'parse5'
+{parseFragment, treeAdapters} = require 'parse5'
 
-blocks = require './block-tags'
 converters = require './converters'
-voids = require './void-tags'
-{cleanText, decodeHtmlEntities, nodeType} = require './utils'
-{stringRepeat, delimitCode} = require './utils'
+{cleanText, decodeHtmlEntities, nodeType, isBlock, isVoid} = require './utils'
 
 treeAdapter = treeAdapters.default
-
-###*
- * Utilities
-###
-isBlock = (node) -> node.nodeName in blocks
-isVoid = (node) -> node.nodeName in voids
 
 ###*
  * Some people accidently skip levels in their headers (like jumping from h1 to
@@ -99,6 +90,8 @@ bfsOrder = (node) ->
  * Contructs a Markdown string of replacement text for a given node
 ###
 getContent = (node) ->
+  if node.nodeName is '#text' then return node.value
+
   text = ''
   for child in node.childNodes
     text += (
@@ -107,17 +100,13 @@ getContent = (node) ->
           child._replacement
         when 3
           if node.nodeName in ['code', 'pre']
+            # these tags contain whitespace-sensitive content, so we can't apply
+            # advanced text cleaning
             decodeHtmlEntities(child.value)
           else
             cleanText(child.value)
     )
   text
-
-###*
- * Returns the HTML string of an element with its contents converted
-###
-outer = (node, content) ->
-  serialize(node).replace '><', '>' + content + '<'
 
 canConvert = (node, filter) ->
   if typeof filter is 'string'
@@ -125,40 +114,50 @@ canConvert = (node, filter) ->
   if Array.isArray(filter)
     return node.nodeName.toLowerCase() in filter
   else if typeof filter is 'function'
-    return filter.call(toMarkdown, node)
+    return filter(node)
   else
     throw new TypeError('`filter` needs to be a string, array, or function')
   return
 
+###*
+ * @return {Integer} The index of the given `node` relative to all the children
+   of its parent
+###
+getNodeIndex = (node) ->
+  node.parentNode.childNodes.indexOf(node)
+
+getPreviousSibling = (node) ->
+  node.parentNode.childNodes[getNodeIndex(node) - 1]
+
+getNextSibling = (node) ->
+  node.parentNode.childNodes[getNodeIndex(node) + 1]
+
 isFlankedByWhitespace = (side, node) ->
-  isFlanked = undefined
+  isFlanked = false
   if side is 'left'
-    sibling = node.previousSibling
-    regExp = RegExp(' $')
+    sibling = getPreviousSibling(node)
+    regExp = /\s$/
   else
-    sibling = node.nextSibling
-    regExp = /^ /
-  if sibling
-    if nodeType(sibling) is 3
-      isFlanked = regExp.test(sibling.nodeValue)
-    else if nodeType(sibling) is 1 and not isBlock(sibling)
-      isFlanked = regExp.test(sibling.textContent)
+    sibling = getNextSibling(node)
+    regExp = /^\s/
+
+  if sibling and not isBlock(sibling)
+    isFlanked = regExp.test getContent(sibling)
   isFlanked
 
 flankingWhitespace = (node) ->
   leading = ''
   trailing = ''
   if not isBlock(node)
-    hasLeading = /^[ \r\n\t]/.test(node.innerHTML)
-    hasTrailing = /[ \r\n\t]$/.test(node.innerHTML)
+    content = getContent(node)
+    hasLeading = /^\s/.test content
+    hasTrailing = /\s$/.test content
     if hasLeading and not isFlankedByWhitespace('left', node)
       leading = ' '
     if hasTrailing and not isFlankedByWhitespace('right', node)
       trailing = ' '
-  {
-    leading: leading
-    trailing: trailing
-  }
+
+  return {leading, trailing}
 
 ###
  * Finds a Markdown converter, gets the replacement, and sets it on
@@ -178,11 +177,15 @@ process = (node) ->
           '`replacement` needs to be a function that returns a string'
         )
       whitespace = flankingWhitespace(node)
-      if whitespace.leading or whitespace.trailing
+      if node.nodeName not in ['pre', 'ul', 'ol'] and
+         node.parentNode.nodeName not in ['pre', 'ul', 'ol']
+        # pre tags are whitespace-sensitive, and ul/ol tags are composed of li
+        # tags, so they don't have leading/trailing whitespace, and stripping
+        # them would screw up spacing around nested lists
         content = content.trim()
       replacement = (
         whitespace.leading +
-        converter.replacement.call(toMarkdown, content, node) +
+        converter.replacement(content, node) +
         whitespace.trailing
       )
       break
@@ -190,40 +193,26 @@ process = (node) ->
   node._replacement = replacement
   return
 
-toMarkdown = (input, options = {}) ->
-  options.ensureFirstHeaderIsH1 ?= true
-
-  if typeof input isnt 'string'
-    throw new TypeError("#{input} is not a string")
-  # Escape potential ol triggers
-  input = input.replace(/(\d+)\. /g, '$1\\. ')
-  clone = parseFragment(input)
-  fixHeaders(clone, options.ensureFirstHeaderIsH1)
-  nodes = bfsOrder(clone)
+removeEmptyNodes = (nodes) ->
   # remove whitespace text nodes
   for node in nodes
     emptyChildren = []
     for child in node.childNodes
       if child.nodeName is '#text' and child.value.trim() is ''
-        emptyChildren.push(child)
+        previousSibling = getPreviousSibling(child)
+        nextSibling = getNextSibling(child)
+        if not previousSibling or not nextSibling or
+           isBlock(previousSibling) or isBlock(nextSibling)
+          emptyChildren.push(child)
     for child in emptyChildren
       treeAdapter.detachNode child
 
-  # Process nodes in reverse (so deepest child elements are first).
-  for node in nodes by -1
-    process node
+module.exports = (dirtyMarkdown, options = {}) ->
+  if typeof dirtyMarkdown isnt 'string'
+    throw new TypeError('Markdown input is not a string')
 
-  # remove this section because it fucks up code blocks with extra space in them
-  getContent(clone).trimRight().replace(
-    /\n{3,}/g, '\n\n'
-  ).replace(
-    /^\n+/, ''
-  ) + '\n'
+  options.ensureFirstHeaderIsH1 ?= true
 
-toMarkdown.isBlock = isBlock
-toMarkdown.outer = outer
-
-module.exports = (dirtyMarkdown, options) ->
   out = ''
 
   # handle yaml front-matter
@@ -231,21 +220,36 @@ module.exports = (dirtyMarkdown, options) ->
   if Object.keys(content.attributes).length isnt 0
     out += '---\n' + yaml.safeDump(content.attributes).trim() + '\n---\n\n'
 
-  html = marked(content.body)
-  out += toMarkdown(html, options)
-
-  ###
   ast = marked.lexer(content.body)
+  links = ast.links # see issue: https://github.com/chjj/marked/issues/472
+  html = marked.parser(ast)
 
-  # see issue: https://github.com/chjj/marked/issues/472
-  links = ast.links
+  # Escape potential ol triggers
+  html = html.replace(/(\d+)\. /g, '$1\\. ')
 
-  if Object.keys(links).length > 0 then out.push ''
+  root = parseFragment(html)
+
+  # remove empty nodes that are direct children of the root first
+  removeEmptyNodes([root])
+
+  fixHeaders(root, options.ensureFirstHeaderIsH1)
+  nodes = bfsOrder(root)
+  removeEmptyNodes(nodes)
+
+  # Process nodes in reverse (so deepest child elements are first).
+  for node in nodes by -1
+    process node
+
+  # remove this section because it fucks up code blocks with extra space in them
+  out += getContent(root).trimRight().replace(
+    /\n{3,}/g, '\n\n'
+  ).replace(
+    /^\n+/, ''
+  ) + '\n'
+
+  if Object.keys(links).length > 0 then out += '\n'
   for id, link of links
     optionalTitle = if link.title then " \"#{link.title}\"" else ''
-    out.push "[#{id}]: #{link.href}#{optionalTitle}"
+    out += "[#{id}]: #{link.href}#{optionalTitle}\n"
 
-  # filter multiple sequential linebreaks
-  out = out.filter (val, i, arr) -> not (val is '' and arr[i - 1] is '')
-  ###
   return out

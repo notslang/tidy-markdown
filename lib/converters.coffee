@@ -1,6 +1,7 @@
 indent = require 'indent'
+{serialize} = require 'parse5'
 
-{delimitCode, getAttribute, nodeType, stringRepeat} = require './utils'
+{delimitCode, getAttribute, nodeType, stringRepeat, isBlock} = require './utils'
 {
   extractRows
   formatHeaderSeparator
@@ -9,6 +10,12 @@ indent = require 'indent'
 } = require './tables'
 
 CODE_HIGHLIGHT_REGEX = /highlight highlight-(\S+)/
+
+###*
+ * Returns the HTML string of an element with its contents converted
+###
+outer = (node, content) ->
+  serialize(node).replace '><', '>' + content + '<'
 
 module.exports = [
   {
@@ -47,12 +54,12 @@ module.exports = [
       out.join('\n')
   }
   {
-    filter: (node) ->
-      node.nodeName is 'pre' and node.childNodes[0]?.nodeName is 'code'
+    filter: 'pre'
     replacement: (content, node) ->
-      language = getAttribute(
-        node.childNodes[0], 'class'
-      )?.match(/lang-([^\s]+)/)?[1]
+      if node.childNodes[0]?.nodeName is 'code'
+        language = getAttribute(
+          node.childNodes[0], 'class'
+        )?.match(/lang-([^\s]+)/)?[1]
       if not language? and node.parentNode.nodeName is 'div'
         language = getAttribute(
           node.parentNode, 'class'
@@ -140,13 +147,13 @@ module.exports = [
       "\n\n#{strings.join '\n'}\n\n"
   }
   {
-    filter: (node) -> @isBlock node
+    filter: (node) -> isBlock node
     replacement: (content, node) ->
-      "\n\n#{@outer(node, content)}\n\n"
+      "\n\n#{outer(node, content)}\n\n"
   }
   {
     filter: -> true
     replacement: (content, node) ->
-      @outer node, content
+      outer node, content
   }
 ]
