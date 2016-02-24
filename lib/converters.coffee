@@ -1,7 +1,7 @@
 indent = require 'indent'
 {serialize} = require 'parse5'
 
-{delimitCode, getAttribute, nodeType, stringRepeat, isBlock} = require './utils'
+{delimitCode, getAttribute, stringRepeat, isBlock} = require './utils'
 {
   extractRows
   formatHeaderSeparator
@@ -17,27 +17,77 @@ CODE_HIGHLIGHT_REGEX = /highlight highlight-(\S+)/
 outer = (node, content) ->
   serialize(node).replace '><', '>' + content + '<'
 
+###*
+ * This array holds a set of "converters" that process DOM nodes and output
+   Markdown. The `filter` property determines what nodes the converter is run
+   on. The `replacement` function takes the content of the node and the node
+   itself and returns a string of Markdown. The `surroundingBlankLines` option
+   determines whether or not the block should have a blank line before and after
+   it. Converters are matched to nodes starting from the top of the converters
+   list and testing each one downwards.
+ * @type {Array}
+###
 module.exports = [
   {
     filter: 'p'
-    replacement: (content) -> "\n\n#{content}\n\n"
+    surroundingBlankLines: true
+    replacement: (content) -> content
+  }
+  {
+    filter: ['td', 'th']
+    surroundingBlankLines: false
+    replacement: (content) -> content
   }
   {
     filter: ['del', 's', 'strike']
+    surroundingBlankLines: false
     replacement: (content) -> "~~#{content}~~"
+  }
+  {
+    filter: ['em', 'i']
+    surroundingBlankLines: false
+    replacement: (content) -> "_#{content}_"
+  }
+  {
+    filter: ['strong', 'b']
+    surroundingBlankLines: false
+    replacement: (content) -> "**#{content}**"
+  }
+  {
+    filter: 'a'
+    surroundingBlankLines: false
+    replacement: (content, node) ->
+      url = getAttribute(node, 'href') or ''
+      title = getAttribute(node, 'title') or ''
+      if not title and url isnt '' and content is url
+        "<#{url}>"
+      else if title
+        "[#{content}](#{url} \"#{title}\")"
+      else
+        "[#{content}](#{url})"
+  }
+  {
+    filter: 'img'
+    surroundingBlankLines: false
+    replacement: (content, node) ->
+      alt = getAttribute(node, 'alt') or ''
+      url = getAttribute(node, 'src') or ''
+      title = getAttribute(node, 'title')
+      if title
+        "![#{alt}](#{url} \"#{title}\")"
+      else
+        "![#{alt}](#{url})"
   }
   {
     filter: (node) ->
       node.type is 'checkbox' and node.parentNode.nodeName is 'li'
+    surroundingBlankLines: false
     replacement: (content, node) ->
       (if node.checked then '[x]' else '[ ]') + ' '
   }
   {
-    filter: ['td', 'th']
-    replacement: (content) -> content
-  }
-  {
     filter: 'table'
+    surroundingBlankLines: true
     replacement: (content, node) ->
       {alignments, rows} = extractRows(node)
       columnWidths = getColumnWidths(rows)
@@ -55,6 +105,7 @@ module.exports = [
   }
   {
     filter: 'pre'
+    surroundingBlankLines: true
     replacement: (content, node) ->
       if node.childNodes[0]?.nodeName is 'code'
         language = getAttribute(
@@ -64,10 +115,11 @@ module.exports = [
         language = getAttribute(
           node.parentNode, 'class'
         )?.match(CODE_HIGHLIGHT_REGEX)?[1]
-      '\n\n' + delimitCode("#{language or ''}\n#{content}", '```') + '\n\n'
+      delimitCode("#{language or ''}\n#{content}", '```')
   }
   {
     filter: 'code'
+    surroundingBlankLines: false
     replacement: (content, node) ->
       if node.parentNode.nodeName isnt 'pre'
         delimitCode(content, '`') # inline code
@@ -80,57 +132,29 @@ module.exports = [
   {
     filter: (node) ->
       node.nodeName is 'div' and CODE_HIGHLIGHT_REGEX.test(node.className)
-    replacement: (content) -> "\n\n#{content}\n\n"
+    surroundingBlankLines: true
+    replacement: (content) -> content
   }
   {
     filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
+    surroundingBlankLines: true
     replacement: (content, node) ->
       hLevel = node.nodeName[1]
-      "\n\n#{stringRepeat('#', hLevel)} #{content}\n\n"
+      "#{stringRepeat('#', hLevel)} #{content}"
   }
   {
     filter: 'hr'
-    replacement: -> "\n\n#{stringRepeat('-', 80)}\n\n"
-  }
-  {
-    filter: ['em', 'i']
-    replacement: (content) -> "_#{content}_"
-  }
-  {
-    filter: ['strong', 'b']
-    replacement: (content) -> "**#{content}**"
-  }
-  {
-    filter: 'a'
-    replacement: (content, node) ->
-      url = getAttribute(node, 'href') or ''
-      title = getAttribute(node, 'title') or ''
-      if not title and url isnt '' and content is url
-        "<#{url}>"
-      else if title
-        "[#{content}](#{url} \"#{title}\")"
-      else
-        "[#{content}](#{url})"
-  }
-  {
-    filter: 'img'
-    replacement: (content, node) ->
-      alt = getAttribute(node, 'alt') or ''
-      url = getAttribute(node, 'src') or ''
-      title = getAttribute(node, 'title') or ''
-      if title
-        "![#{alt}](#{url} \"#{title}\")"
-      else
-        "![#{alt}](#{url})"
+    surroundingBlankLines: true
+    replacement: -> stringRepeat('-', 80)
   }
   {
     filter: 'blockquote'
-    replacement: (content) ->
-      content = indent(content.trim().replace(/\n{3,}/g, '\n\n'), '> ')
-      "\n\n#{content}\n\n"
+    surroundingBlankLines: true
+    replacement: (content) -> indent(content, '> ')
   }
   {
     filter: 'li'
+    surroundingBlankLines: false
     replacement: (content, node) ->
       content = indent(content, '  ').replace(/^\s+/, '')
       parent = node.parentNode
@@ -140,20 +164,21 @@ module.exports = [
   }
   {
     filter: ['ul', 'ol']
+    surroundingBlankLines: true
     replacement: (content, node) ->
       strings = []
       for child in node.childNodes
         strings.push child._replacement
-      "\n\n#{strings.join '\n'}\n\n"
+      strings.join '\n'
   }
   {
     filter: (node) -> isBlock node
-    replacement: (content, node) ->
-      "\n\n#{outer(node, content)}\n\n"
+    surroundingBlankLines: true
+    replacement: (content, node) -> outer node, content
   }
   {
     filter: -> true
-    replacement: (content, node) ->
-      outer node, content
+    surroundingBlankLines: false
+    replacement: (content, node) -> outer node, content
   }
 ]

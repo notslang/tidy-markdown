@@ -510,6 +510,30 @@ describe 'tables', ->
 
     ''')
 
+  it 'should handle tables surrounded by text', ->
+    tidyMd('''
+      # a header
+
+      this is a table:
+
+      | Group
+      | ------
+      | value & whatnot
+
+      ...and that table was pretty great, right?
+    ''').should.equal('''
+      # a header
+
+      this is a table:
+
+      | Group
+      | ---------------
+      | value & whatnot
+
+      ...and that table was pretty great, right?
+
+    ''')
+
 describe 'horizontal rules', ->
   it 'should normalize horizontal rules', ->
     tidyMdSnippet('''

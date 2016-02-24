@@ -183,6 +183,11 @@ process = (node) ->
         # tags, so they don't have leading/trailing whitespace, and stripping
         # them would screw up spacing around nested lists
         content = content.trim()
+
+      if converter.surroundingBlankLines
+        whitespace.leading = '\n\n'
+        whitespace.trailing = '\n\n'
+
       replacement = (
         whitespace.leading +
         converter.replacement(content, node) +
