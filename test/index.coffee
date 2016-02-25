@@ -152,6 +152,13 @@ describe 'paragraphs', ->
       'Lorem ipsum dolor adipiscing quis massa lorem'
     )
 
+  it 'should get rid of mid-paragraph linebreaks in inline code', ->
+    tidyMdSnippet(
+      'Lorem ipsum dolor `node test\n--fix` quis massa lorem'
+    ).should.equal(
+      'Lorem ipsum dolor `node test --fix` quis massa lorem'
+    )
+
   it 'should handle real linebreaks', ->
     tidyMdSnippet(
       'Lorem ipsum dolor adipiscing  \nquis massa lorem'

@@ -51,13 +51,27 @@ nodeType = (node) ->
 getAttribute = (node, attribute) ->
   _.find(node.attrs, name: attribute)?.value or null
 
-cleanText = (text) ->
-  decodeHtmlEntities(text)
-    .replace /\s+/g, ' ' # excessive whitespace & linebreaks
-    .replace /\u2014/g, '--' # em-dashes
-    .replace /\u2018|\u2019/g, '\'' # opening/closing singles & apostrophes
-    .replace /\u201c|\u201d/g, '"' # opening/closing doubles
-    .replace /\u2026/g, '...' # ellipses
+cleanText = (node) ->
+  parent = node.parentNode
+  text = decodeHtmlEntities(node.value)
+
+  if 'pre' not in [parent.nodeName, parent.parentNode.nodeName]
+    text = text.replace /\s+/g, ' ' # excessive whitespace & linebreaks
+
+  if parent.nodeName in ['code', 'pre']
+    # these tags contain whitespace-sensitive content, so we can't apply
+    # advanced text cleaning
+    text
+  else
+    text.replace(
+      /\u2014/g, '--' # em-dashes
+    ).replace(
+      /\u2018|\u2019/g, '\'' # opening/closing singles & apostrophes
+    ).replace(
+      /\u201c|\u201d/g, '"' # opening/closing doubles
+    ).replace(
+      /\u2026/g, '...' # ellipses
+    )
 
 htmlEntities = new Entities()
 decodeHtmlEntities = (text) ->

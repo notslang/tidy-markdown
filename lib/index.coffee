@@ -100,12 +100,7 @@ getContent = (node) ->
         when 1
           child._replacement
         when 3
-          if node.nodeName in ['code', 'pre']
-            # these tags contain whitespace-sensitive content, so we can't apply
-            # advanced text cleaning
-            decodeHtmlEntities(child.value)
-          else
-            cleanText(child.value)
+          cleanText(child)
     )
     if nextTrimLeft
       childText = childText.trimLeft()
