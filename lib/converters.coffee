@@ -1,3 +1,4 @@
+_ = require 'lodash'
 indent = require 'indent'
 {serialize} = require 'parse5'
 
@@ -61,10 +62,16 @@ module.exports = [
   {
     filter: 'a'
     surroundingBlankLines: false
-    replacement: (content, node) ->
+    replacement: (content, node, links) ->
       url = getAttribute(node, 'href') or ''
-      title = getAttribute(node, 'title') or ''
-      if not title and url isnt '' and content is url
+      title = getAttribute(node, 'title')
+      referenceLink = _.find(links, {url, title})
+      if referenceLink
+        if content.toLowerCase() is referenceLink.name
+          "[#{content}]"
+        else
+          "[#{content}][#{referenceLink.name}]"
+      else if not title and url isnt '' and content is url
         "<#{url}>"
       else if title
         "[#{content}](#{url} \"#{title}\")"

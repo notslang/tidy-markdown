@@ -169,7 +169,7 @@ flankingWhitespace = (node) ->
  * Finds a Markdown converter, gets the replacement, and sets it on
  * `_replacement`
 ###
-process = (node) ->
+process = (node, links) ->
   content = getContent(node)
   # Remove blank nodes
   if not isVoid(node) and node.nodeName isnt 'a' and /^\s*$/i.test(content)
@@ -196,7 +196,7 @@ process = (node) ->
 
       replacement = (
         whitespace.leading +
-        converter.replacement(content, node) +
+        converter.replacement(content, node, links) +
         whitespace.trailing
       )
       break
@@ -232,7 +232,16 @@ module.exports = (dirtyMarkdown, options = {}) ->
     out += '---\n' + yaml.safeDump(content.attributes).trim() + '\n---\n\n'
 
   ast = marked.lexer(content.body)
-  links = ast.links # see issue: https://github.com/chjj/marked/issues/472
+
+  rawLinks = ast.links # see issue: https://github.com/chjj/marked/issues/472
+  links = []
+  for link, value of rawLinks
+    links.push(
+      name: link.toLowerCase()
+      url: value.href
+      title: value.title or null
+    )
+
   html = marked.parser(ast)
 
   # Escape potential ol triggers
@@ -248,7 +257,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
 
   # Process nodes in reverse (so deepest child elements are first).
   for node in nodes by -1
-    process node
+    process node, links
 
   # remove this section because it fucks up code blocks with extra space in them
   out += getContent(root).trimRight().replace(
@@ -257,9 +266,9 @@ module.exports = (dirtyMarkdown, options = {}) ->
     /^\n+/, ''
   ) + '\n'
 
-  if Object.keys(links).length > 0 then out += '\n'
-  for id, link of links
-    optionalTitle = if link.title then " \"#{link.title}\"" else ''
-    out += "[#{id}]: #{link.href}#{optionalTitle}\n"
+  if links.length > 0 then out += '\n'
+  for {name, url, title} in links
+    optionalTitle = if title then " \"#{title}\"" else ''
+    out += "[#{name}]: #{url}#{optionalTitle}\n"
 
   return out
