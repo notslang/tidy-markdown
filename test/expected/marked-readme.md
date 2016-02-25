@@ -160,10 +160,10 @@ This code will output the following HTML:
 - code(_string_ code, _string_ language)
 - blockquote(_string_ quote)
 - html(_string_ html)
-- heading(_string_ text, _number_  level)
+- heading(_string_ text, _number_ level)
 - hr()
 - list(_string_ body, _boolean_ ordered)
-- listitem(_string_  text)
+- listitem(_string_ text)
 - paragraph(_string_ text)
 - table(_string_ header, _string_ body)
 - tablerow(_string_ content)
@@ -198,7 +198,7 @@ Enable [GitHub flavored markdown][gfm].
 
 Type: `boolean` Default: `true`
 
-Enable GFM [tables][tables]. This option requires the `gfm` option to be true.
+Enable GFM [tables]. This option requires the `gfm` option to be true.
 
 ### breaks
 
