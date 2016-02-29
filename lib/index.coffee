@@ -92,9 +92,9 @@ bfsOrder = (node) ->
 getContent = (node) ->
   if node.nodeName is '#text' then return node.value
 
-  text = ''
+  content = ''
+  previousSibling = null
   for child in node.childNodes
-    if child.nodeName is 'br' then text = text.trimRight()
     childText = (
       switch nodeType(child)
         when 1
@@ -102,12 +102,15 @@ getContent = (node) ->
         when 3
           cleanText(child)
     )
-    if nextTrimLeft
-      childText = childText.trimLeft()
-      nextTrimLeft = false
-    if child.nodeName is 'br' then nextTrimLeft = true
-    text += childText
-  text
+
+    # prevent extra whitespace around `<br>`s
+    if child.nodeName is 'br' then content = content.trimRight()
+    if previousSibling?.nodeName is 'br' then childText = childText.trimLeft()
+
+    content += childText
+    previousSibling = child
+
+  return content
 
 canConvert = (node, filter) ->
   if typeof filter is 'string'
@@ -258,7 +261,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
   out += getContent(root).trimRight().replace(
     /\n{3,}/g, '\n\n'
   ).replace(
-    /^\n+/, ''
+    /^\n+/, '' # remove leading linebreaks
   ) + '\n'
 
   if links.length > 0 then out += '\n'
