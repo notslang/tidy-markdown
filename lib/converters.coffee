@@ -57,7 +57,8 @@ module.exports = [
   {
     filter: 'br'
     surroundingBlankLines: false
-    replacement: -> '<br>\n'
+    trailingWhitespace: '\n'
+    replacement: -> '<br>'
   }
   {
     filter: 'a'
@@ -167,21 +168,21 @@ module.exports = [
   {
     filter: 'li'
     surroundingBlankLines: false
+    trailingWhitespace: '\n'
     replacement: (content, node) ->
       content = indent(content, '  ').replace(/^\s+/, '')
       parent = node.parentNode
-      index = parent.childNodes.indexOf(node) + 1
-      prefix = if parent.nodeName is 'ol' then index + '. ' else '- '
+      prefix = (
+        if parent.nodeName is 'ol'
+          parent.childNodes.indexOf(node) + 1 + '. '
+        else '- '
+      )
       prefix + content
   }
   {
     filter: ['ul', 'ol']
     surroundingBlankLines: true
-    replacement: (content, node) ->
-      strings = []
-      for child in node.childNodes
-        strings.push child._replacement
-      strings.join '\n'
+    replacement: (content) -> content
   }
   {
     filter: (node) -> isBlock node

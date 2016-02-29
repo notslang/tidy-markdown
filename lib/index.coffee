@@ -107,6 +107,15 @@ getContent = (node) ->
     if child.nodeName is 'br' then content = content.trimRight()
     if previousSibling?.nodeName is 'br' then childText = childText.trimLeft()
 
+    if previousSibling?
+      whitespaceSeparator = (
+        (child._whitespace?.leading or '') +
+        (previousSibling?._whitespace?.trailing or '')
+      ).replace(
+        /\n{3,}/, '\n\n'
+      )
+      content += whitespaceSeparator
+
     content += childText
     previousSibling = child
 
@@ -161,6 +170,13 @@ flankingWhitespace = (node) ->
     if hasTrailing and not isFlankedByWhitespace('right', node)
       trailing = ' '
 
+  # add whitespace from leading / trailing whitespace attributes in first / last
+  # child nodes
+  if node.childNodes[0]?._whitespace?.leading
+    leading += node.childNodes[0]._whitespace.leading
+  if node.childNodes[-1...][0]?._whitespace?.trailing
+    trailing += node.childNodes[-1...][0]._whitespace.trailing
+
   return {leading, trailing}
 
 ###
@@ -180,26 +196,25 @@ process = (node, links) ->
         throw new TypeError(
           '`replacement` needs to be a function that returns a string'
         )
-      whitespace = flankingWhitespace(node)
-      if node.nodeName not in ['pre', 'ul', 'ol'] and
-         node.parentNode.nodeName not in ['pre', 'ul', 'ol']
-        # pre tags are whitespace-sensitive, and ul/ol tags are composed of li
-        # tags, so they don't have leading/trailing whitespace, and stripping
-        # them would screw up spacing around nested lists
-        content = content.trim()
+      if node.nodeName isnt 'pre' and node.parentNode.nodeName isnt 'pre'
+        content = content.trim() # pre tags are whitespace-sensitive
 
       if converter.surroundingBlankLines
-        whitespace.leading = '\n\n'
-        whitespace.trailing = '\n\n'
+        whitespace = {leading: '\n\n', trailing: '\n\n'}
+      else
+        whitespace = flankingWhitespace(node)
+        if converter.trailingWhitespace?
+          whitespace.trailing += converter.trailingWhitespace
 
-      replacement = (
-        whitespace.leading +
-        converter.replacement(content, node, links) +
-        whitespace.trailing
-      )
+      if node.nodeName is 'li'
+        # li isn't allowed to have leading whitespace
+        whitespace.leading = ''
+
+      replacement = converter.replacement(content, node, links)
       break
 
   node._replacement = replacement
+  node._whitespace = whitespace
   return
 
 removeEmptyNodes = (nodes) ->
@@ -257,12 +272,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
   for node in nodes by -1
     process node, links
 
-  # remove this section because it fucks up code blocks with extra space in them
-  out += getContent(root).trimRight().replace(
-    /\n{3,}/g, '\n\n'
-  ).replace(
-    /^\n+/, '' # remove leading linebreaks
-  ) + '\n'
+  out += getContent(root).trimRight() + '\n'
 
   if links.length > 0 then out += '\n'
   for {name, url, title} in links
