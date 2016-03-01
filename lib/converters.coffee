@@ -40,6 +40,11 @@ module.exports = [
     replacement: (content) -> content
   }
   {
+    filter: ['tbody', 'thead', 'tr']
+    surroundingBlankLines: false
+    replacement: -> ''
+  }
+  {
     filter: ['del', 's', 'strike']
     surroundingBlankLines: false
     replacement: (content) -> "~~#{content}~~"
