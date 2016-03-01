@@ -132,6 +132,10 @@ canConvert = (node, filter) ->
     throw new TypeError('`filter` needs to be a string, array, or function')
   return
 
+findConverter = (node) ->
+  for converter in converters
+    if canConvert(node, converter.filter) then return converter
+
 ###*
  * @return {Integer} The index of the given `node` relative to all the children
    of its parent
@@ -185,35 +189,23 @@ flankingWhitespace = (node) ->
 ###
 process = (node, links) ->
   content = getContent(node)
-  # Remove blank nodes
-  if not isVoid(node) and node.nodeName isnt 'a' and /^\s*$/i.test(content)
-    node._replacement = ''
-    return
+  converter = node._converter
 
-  for converter in converters
-    if canConvert(node, converter.filter)
-      if typeof converter.replacement isnt 'function'
-        throw new TypeError(
-          '`replacement` needs to be a function that returns a string'
-        )
-      if node.nodeName isnt 'pre' and node.parentNode.nodeName isnt 'pre'
-        content = content.trim() # pre tags are whitespace-sensitive
+  if node.nodeName isnt 'pre' and node.parentNode.nodeName isnt 'pre'
+    content = content.trim() # pre tags are whitespace-sensitive
 
-      if converter.surroundingBlankLines
-        whitespace = {leading: '\n\n', trailing: '\n\n'}
-      else
-        whitespace = flankingWhitespace(node)
-        if converter.trailingWhitespace?
-          whitespace.trailing += converter.trailingWhitespace
+  if converter.surroundingBlankLines
+    whitespace = {leading: '\n\n', trailing: '\n\n'}
+  else
+    whitespace = flankingWhitespace(node)
+    if converter.trailingWhitespace?
+      whitespace.trailing += converter.trailingWhitespace
 
-      if node.nodeName is 'li'
-        # li isn't allowed to have leading whitespace
-        whitespace.leading = ''
+  if node.nodeName is 'li'
+    # li isn't allowed to have leading whitespace
+    whitespace.leading = ''
 
-      replacement = converter.replacement(content, node, links)
-      break
-
-  node._replacement = replacement
+  node._replacement = converter.replacement(content, node, links)
   node._whitespace = whitespace
   return
 
@@ -267,6 +259,11 @@ module.exports = (dirtyMarkdown, options = {}) ->
   fixHeaders(root, options.ensureFirstHeaderIsH1)
   nodes = bfsOrder(root)
   removeEmptyNodes(nodes)
+
+  # find converters, starting from the top of the tree. if a converter cannot be
+  # found, then the element and all children should be treated as HTML
+  for node in nodes
+    node._converter = findConverter(node)
 
   # Process nodes in reverse (so deepest child elements are first).
   for node in nodes by -1
