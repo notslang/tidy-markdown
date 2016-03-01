@@ -613,15 +613,14 @@ describe 'html', ->
         <dd>Is something people use sometimes.</dd>
 
         <dt>Markdown in HTML</dt>
-        <dd>Does *not* work **very** well. Use HTML <em>tags</em>.</dd>
+        <dd>Does *not* work well. Use HTML <em>tags</em>.</dd>
       </dl>
     ''').should.equal('''
       <dl>
         <dt>Definition list</dt>
         <dd>Is something people use sometimes.</dd>
-
         <dt>Markdown in HTML</dt>
-        <dd>Does *not* work **very** well. Use HTML <em>tags</em>.</dd>
+        <dd>Does <em>not</em> work well. Use HTML <em>tags</em>.</dd>
       </dl>
     ''')
 

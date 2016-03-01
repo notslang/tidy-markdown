@@ -1,6 +1,6 @@
 _ = require 'lodash'
 indent = require 'indent'
-{serialize} = require 'parse5'
+{serialize, treeAdapters} = require 'parse5'
 
 {delimitCode, getAttribute, stringRepeat, isBlock} = require './utils'
 {
@@ -10,13 +10,25 @@ indent = require 'indent'
   getColumnWidths
 } = require './tables'
 
+treeAdapter = treeAdapters.default
+
 CODE_HIGHLIGHT_REGEX = /highlight highlight-(\S+)/
 
-###*
- * Returns the HTML string of an element with its contents converted
-###
-outer = (node, content) ->
-  serialize(node).replace '><', '>' + content + '<'
+indentChildren = (node) ->
+  allChildrenAreElements = true
+  for child in node.childNodes
+    if child.nodeName is '#text' then allChildrenAreElements = false
+
+  if allChildrenAreElements
+    children = []
+    children.push child for child in node.childNodes
+    for child in children
+      treeAdapter.insertTextBefore(node, '\n  ', child)
+    treeAdapter.insertText(node, '\n')
+
+  # TODO: handle indenting nested children
+
+fallback = -> true
 
 ###*
  * This array holds a set of "converters" that process DOM nodes and output
@@ -29,6 +41,13 @@ outer = (node, content) ->
  * @type {Array}
 ###
 module.exports = [
+  {
+    filter: (node) -> node.parentNode?._converter?.filter is fallback
+    surroundingBlankLines: false
+    replacement: (content, node) ->
+      indentChildren(node)
+      return ''
+  }
   {
     filter: 'p'
     surroundingBlankLines: true
@@ -190,13 +209,14 @@ module.exports = [
     replacement: (content) -> content
   }
   {
-    filter: (node) -> isBlock node
+    filter: fallback
     surroundingBlankLines: true
-    replacement: (content, node) -> outer node, content
-  }
-  {
-    filter: -> true
-    surroundingBlankLines: false
-    replacement: (content, node) -> outer node, content
+    replacement: (content, node) ->
+      indentChildren(node)
+      serialize({
+        nodeName: '#document-fragment'
+        quirksMode: false
+        childNodes: [node]
+      })
   }
 ]
