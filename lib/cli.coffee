@@ -1,11 +1,12 @@
-ArgumentParser = require('argparse').ArgumentParser
+{ArgumentParser} = require 'argparse'
+
 packageInfo = require '../package'
 tidyMarkdown = require './'
 
 argparser = new ArgumentParser(
-  version: packageInfo.version
   addHelp: true
   description: packageInfo.description
+  version: packageInfo.version
 )
 
 argparser.addArgument(
