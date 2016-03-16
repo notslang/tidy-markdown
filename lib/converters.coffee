@@ -2,6 +2,7 @@ _ = require 'lodash'
 indent = require 'indent'
 {serialize, treeAdapters} = require 'parse5'
 
+languageCodeRewrite = require '../lib/language-code-rewrites'
 {delimitCode, getAttribute, stringRepeat, isBlock} = require './utils'
 {
   extractRows
@@ -152,6 +153,10 @@ module.exports = [
         language = getAttribute(
           node.parentNode, 'class'
         )?.match(CODE_HIGHLIGHT_REGEX)?[1]
+      if language?
+        language = language.toLowerCase()
+        if languageCodeRewrite[language]?
+          language = languageCodeRewrite[language]
       delimitCode("#{language or ''}\n#{content}", '```')
   }
   {

@@ -14,7 +14,7 @@ npm install marked --save
 
 Minimal usage:
 
-```js
+```javascript
 var marked = require('marked');
 console.log(marked('I am using __markdown__.'));
 // Outputs: <p>I am using <strong>markdown</strong>.</p>
@@ -22,7 +22,7 @@ console.log(marked('I am using __markdown__.'));
 
 Example setting options with default values:
 
-```js
+```javascript
 var marked = require('marked');
 marked.setOptions({
   renderer: new marked.Renderer(),
@@ -66,7 +66,7 @@ Type: `function`
 
 A function to highlight code blocks. The first example below uses async highlighting with [node-pygmentize-bundled][pygmentize], and the second is a synchronous example using [highlight.js][highlight]:
 
-````js
+````javascript
 var marked = require('marked');
 
 var markdownString = '```js\n console.log("hello"); \n```';
@@ -171,7 +171,7 @@ This code will output the following HTML:
 
 `flags` has the following properties:
 
-```js
+```javascript
 {
     header: true || false,
     align: 'center' || 'left' || 'right'
@@ -234,12 +234,12 @@ Use "smart" typograhic punctuation for things like quotes and dashes.
 
 You also have direct access to the lexer and parser if you so desire.
 
-```js
+```javascript
 var tokens = marked.lexer(text, options);
 console.log(marked.parser(tokens));
 ```
 
-```js
+```javascript
 var lexer = new marked.Lexer(options);
 var tokens = lexer.lex(text);
 console.log(tokens);
@@ -289,12 +289,12 @@ For those feeling skeptical: These benchmarks run the entire markdown test suite
 
 You also have direct access to the lexer and parser if you so desire.
 
-```js
+```javascript
 var tokens = marked.lexer(text, options);
 console.log(marked.parser(tokens));
 ```
 
-```js
+```javascript
 var lexer = new marked.Lexer(options);
 var tokens = lexer.lex(text);
 console.log(tokens);
