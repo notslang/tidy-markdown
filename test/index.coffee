@@ -201,6 +201,7 @@ describe 'blockquotes', ->
       > Donec sit amet nisl id sem consectetuer.
     ''')
 
+  it 'should normalize blockquotes with nested tags', ->
     tidyMdSnippet('''
       > # header
       > this is a paragraph containing `some code`.
