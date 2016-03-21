@@ -211,6 +211,20 @@ describe 'blockquotes', ->
       > this is a paragraph containing `some code`.
     ''')
 
+  it 'should normalize nested blockquotes', ->
+    tidyMdSnippet('''
+      > start
+      >> two
+
+      > end
+    ''').should.equal('''
+      > start
+
+      > > two
+
+      > end
+    ''')
+
 describe 'lists', ->
   it 'should normalize unordered lists', ->
     tidyMdSnippet('''
