@@ -115,3 +115,9 @@ You can also pass options through a 2nd arg, like `tidyMarkdown(uglyMarkdown, {e
 - Decode Unicode characters that have markdown equivalents (like a horizontal ellipsis becomes "..." and an em-dash becomes "--").
 - Format YAML front-matter and Markdown tables.
 - Convert HTML elements into their Markdown equivalents. For example, `<em>text</em>` becomes `_text_`.
+
+# Minimal Configuration
+
+Tidy Markdown works hard to keep configuration to a minimum. The goal is to create a highly readable, canonical representation of Markdown, much like [gofmt](https://golang.org/cmd/gofmt/) has done for Go. Having extra configuration would defeat that purpose and add extra maintenance work.
+
+That's not to say you shouldn't open issues if you find the output ugly, that's encouraged, especially in the [styleguide repo](https://github.com/slang800/markdown-styleguide) because without criticism it won't get better. However, you should provide examples and a good argument to support the change.
