@@ -65,7 +65,7 @@ Optional arguments:
 
 ## API
 
-Tidy Markdown only exports one function, that takes one argument (the string of ugly markdown). Here's an example of how it can be used:
+Tidy Markdown only exports one function. Here's an example of how it can be used:
 
 ```coffee
 tidyMarkdown = require 'tidy-markdown'
@@ -96,6 +96,8 @@ Lorem ipsum dolor adipiscing
 - two
 - three
 ```
+
+You can also pass options through a 2nd arg, like `tidyMarkdown(uglyMarkdown, {ensureFirstHeaderIsH1: false})`. The option `ensureFirstHeaderIsH1` is the only one right now.
 
 ## Features
 
