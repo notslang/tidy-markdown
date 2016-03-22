@@ -7,7 +7,7 @@
     "tidy-markdown": "./bin/index.js"
   },
   "dependencies": {
-    "argparse": "^1.0.1",
+    "argparse": "^1.0.7",
     "front-matter": "^1.0.0",
     "html-entities": "^1.0.10",
     "indent": "0.0.2",
@@ -20,7 +20,7 @@
   "devDependencies": {
     "coffee-script": "^1.10.0",
     "mocha": "^2.4.5",
-    "should": "^4.0.4"
+    "should": "^8.2.2"
   },
   "keywords": [
     "markdown",
