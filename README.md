@@ -42,12 +42,16 @@ And, of course, we can output to a file too:
 $ tidy-markdown < ./ugly-markdown > ./clean-markdown
 ```
 
+### Docs
+
 The `--help` arg will make it show a usage page:
 
 ```
+$ tidy-markdown --help
 usage: tidy-markdown [-h] [-v] [--no-ensure-first-header-is-h1]
 
-fix ugly markdown.
+Fix ugly markdown. Unformatted Markdown is read from STDIN, formatted, and
+written to STDOUT.
 
 Optional arguments:
   -h, --help            Show this help message and exit.

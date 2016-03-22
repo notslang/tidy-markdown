@@ -5,7 +5,8 @@ tidyMarkdown = require './'
 
 argparser = new ArgumentParser(
   addHelp: true
-  description: packageInfo.description
+  description: packageInfo.description + ' Unformatted Markdown is read from
+  STDIN, formatted, and written to STDOUT.'
   version: packageInfo.version
 )
 

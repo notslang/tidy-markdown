@@ -1,6 +1,6 @@
 {
   "name": "tidy-markdown",
-  "description": "fix ugly markdown.",
+  "description": "Fix ugly markdown.",
   "version": "1.0.0",
   "author": "Sean Lang",
   "bin": {
