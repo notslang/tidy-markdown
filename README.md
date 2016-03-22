@@ -63,6 +63,14 @@ Optional arguments:
                         document.
 ```
 
+### Editing In-place
+
+If you want to rewrite a file in-place, you can use `sponge` from [moreutils](https://joeyh.name/code/moreutils/). If you did `tidy-markdown < ./README.md > ./README.md` you'd end up with an empty file.
+
+```bash
+$ tidy-markdown < ./README.md | sponge ./README.md
+```
+
 ## API
 
 Tidy Markdown only exports one function. Here's an example of how it can be used:
