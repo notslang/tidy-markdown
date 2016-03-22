@@ -109,8 +109,9 @@ You can also pass options through a 2nd arg, like `tidyMarkdown(uglyMarkdown, {e
 
 ## Features
 
-- standardize syntactical elements to use a single way of being written (for example, all unordered lists are formatted to start with hyphens, rather than allowing asterisks and/or addition signs to be mixed in).
-- fix numbering - making ordered lists count naturally from 1 to _n_ and reference links do the same (based on first occurance).
-- make headers move from h1 to smaller without gaps (like an `h1` followed by an `h4` would be corrected to an `h1` followed by an `h2`).
-- decode Unicode characters that have markdown equivalents (like a horizontal ellipsis becomes "..." and an em-dash becomes "--").
-- format YAML front-matter and Markdown tables
+- Standardize syntactical elements to use a single way of being written (for example, all unordered lists are formatted to start with hyphens, rather than allowing asterisks and/or addition signs to be mixed in).
+- Fix numbering - making ordered lists count naturally from 1 to _n_ and reference links do the same (based on first occurance).
+- Make headers move from `h1` to smaller without gaps (like an `h1` followed by an `h4` would be corrected to an `h1` followed by an `h2`).
+- Decode Unicode characters that have markdown equivalents (like a horizontal ellipsis becomes "..." and an em-dash becomes "--").
+- Format YAML front-matter and Markdown tables.
+- Convert HTML elements into their Markdown equivalents. For example, `<em>text</em>` becomes `_text_`.
