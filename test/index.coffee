@@ -654,6 +654,14 @@ describe 'front-matter', ->
       My content
     ''')
 
+describe 'README.md', ->
+  it 'should be formatted correctly', ->
+    readmeContents = fs.readFileSync(
+      "#{__dirname}/../README.md"
+      encoding: 'utf8'
+    )
+    tidyMd(readmeContents).should.equal(readmeContents)
+
 describe 'full documents', ->
   it 'should reformat to match expected', ->
     for file in fs.readdirSync('./test/cases')
