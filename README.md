@@ -116,7 +116,7 @@ You can also pass options through a 2nd arg, like `tidyMarkdown(uglyMarkdown, {e
 - Format YAML front-matter and Markdown tables.
 - Convert HTML elements into their Markdown equivalents. For example, `<em>text</em>` becomes `_text_`.
 
-# Minimal Configuration
+## Minimal Configuration
 
 Tidy Markdown works hard to keep configuration to a minimum. The goal is to create a highly readable, canonical representation of Markdown, much like [gofmt](https://golang.org/cmd/gofmt/) has done for Go. Having extra configuration would defeat that purpose and add extra maintenance work.
 
