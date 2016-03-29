@@ -199,7 +199,10 @@ module.exports = [
     surroundingBlankLines: false
     trailingWhitespace: '\n'
     replacement: (content, node) ->
-      content = indent(content, '  ').replace(/^\s+/, '')
+      if '\n' in content
+        # the indent here is for all the lines after the first, so we only need
+        # do it if there's a linebreak in the content
+        content = indent(content, '  ').trimLeft()
       parent = node.parentNode
       prefix = (
         if parent.nodeName is 'ol'
