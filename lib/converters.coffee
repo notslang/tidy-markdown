@@ -13,7 +13,7 @@ languageCodeRewrite = require '../lib/language-code-rewrites'
 
 treeAdapter = treeAdapters.default
 
-CODE_HIGHLIGHT_REGEX = /highlight highlight-(\S+)/
+CODE_HIGHLIGHT_REGEX = /(?:highlight highlight|lang(?:uage)?)-(\S+)/
 
 indentChildren = (node) ->
   allChildrenAreElements = true
@@ -148,7 +148,7 @@ module.exports = [
       if node.childNodes[0]?.nodeName is 'code'
         language = getAttribute(
           node.childNodes[0], 'class'
-        )?.match(/lang-([^\s]+)/)?[1]
+        )?.match(CODE_HIGHLIGHT_REGEX)?[1]
       if not language? and node.parentNode.nodeName is 'div'
         language = getAttribute(
           node.parentNode, 'class'
