@@ -419,6 +419,13 @@ describe 'inline grammar', ->
     tidyMdSnippet('*italic*').should.equal('_italic_')
     tidyMdSnippet('_italic_').should.equal('_italic_')
 
+  it 'should handle complex italic text (according to commonmark)', ->
+    tidyMdSnippet('''
+      end_of_line _(supported values: `lf`, `crlf`)_
+    ''').should.equal('''
+      end_of_line _(supported values: `lf`, `crlf`)_
+    ''')
+
   it 'should convert code tags', ->
     tidyMdSnippet('<code>code</code>').should.equal('`code`')
 
