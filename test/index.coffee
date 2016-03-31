@@ -10,19 +10,6 @@ describe 'headings', ->
     tidyMdSnippet('<h1>test</h1>').should.equal('# test')
     tidyMdSnippet('<h1> test </h1>').should.equal('# test')
 
-  it 'should fix spaces between heading and text', ->
-    tidyMdSnippet('''
-      #test
-      ##test
-      ###test
-    ''').should.equal('''
-      # test
-
-      ## test
-
-      ### test
-    ''')
-
   it 'should fix atx-style headings', ->
     tidyMdSnippet('''
       # test #
@@ -139,10 +126,10 @@ describe 'headings', ->
     ''')
 
   it 'should strip trailing whitespace', ->
-    tidyMdSnippet('#test ').should.equal('# test')
+    tidyMdSnippet('# test ').should.equal('# test')
 
   it 'should strip excessive whitespace', ->
-    tidyMdSnippet('#test   header').should.equal('# test header')
+    tidyMdSnippet('# test   header').should.equal('# test header')
 
 describe 'paragraphs', ->
   it 'should get rid of mid-paragraph linebreaks', ->
