@@ -2,7 +2,7 @@ fs = require 'fs'
 should = require 'should'
 tidyMd = require '../lib'
 
-# tidyMd witout the trailing newline
+# tidyMd without the trailing newline
 tidyMdSnippet = (text, options) -> tidyMd(text, options).trimRight()
 
 describe 'headings', ->
