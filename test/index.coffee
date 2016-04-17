@@ -472,11 +472,15 @@ describe 'inline grammar', ->
     tidyMdSnippet('![text]( image.jpg )').should.equal('![text](image.jpg)')
     tidyMdSnippet('![]()').should.equal('![]()')
     tidyMdSnippet('![]("")').should.equal('![]("")')
+
+  it 'should handle images with title text', ->
     tidyMdSnippet(
       '![alt text](/path/to/img.jpg "Title")'
     ).should.equal(
       '![alt text](/path/to/img.jpg "Title")'
     )
+
+  it 'should handle images in links', ->
     tidyMdSnippet(
       '[![text]( image.jpg )]( #anchor )'
     ).should.equal(
