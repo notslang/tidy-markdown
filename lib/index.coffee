@@ -1,3 +1,4 @@
+_ = require 'lodash'
 fm = require 'front-matter'
 marked = require 'marked'
 yaml = require 'js-yaml'
@@ -246,6 +247,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
       url: value.href
       title: value.title or null
     )
+  links = _.sortBy(links, ['name', 'url'])
 
   html = marked.parser(ast)
 

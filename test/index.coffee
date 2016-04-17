@@ -467,6 +467,65 @@ describe 'inline grammar', ->
       '<https://github.com/slang800/tidy-markdown>'
     )
 
+  it 'should handle reference links', ->
+    tidyMdSnippet('''
+      [NPM version][npm-url]
+
+      [npm-url]: https://npmjs.org/package/npms-analyzer
+    ''').should.equal('''
+      [NPM version][npm-url]
+
+      [npm-url]: https://npmjs.org/package/npms-analyzer
+    ''')
+
+  it 'should handle shorthand reference links', ->
+    tidyMdSnippet('''
+      [npm-url]
+
+      [npm-url]: https://npmjs.org/package/npms-analyzer
+    ''').should.equal('''
+      [npm-url]
+
+      [npm-url]: https://npmjs.org/package/npms-analyzer
+    ''')
+
+  it 'should convert links to shorthand reference style', ->
+    tidyMdSnippet('''
+      [npm-url](https://npmjs.org/package/npms-analyzer)
+
+      [npm-url]: https://npmjs.org/package/npms-analyzer
+    ''').should.equal('''
+      [npm-url]
+
+      [npm-url]: https://npmjs.org/package/npms-analyzer
+    ''')
+
+  it 'should convert links to shorthand reference style', ->
+    tidyMdSnippet('''
+      [npm-url](https://npmjs.org/package/npms-analyzer)
+
+      [npm-url]: https://npmjs.org/package/npms-analyzer
+    ''').should.equal('''
+      [npm-url]
+
+      [npm-url]: https://npmjs.org/package/npms-analyzer
+    ''')
+
+  it 'should sort reference style links', ->
+    tidyMdSnippet('''
+      Visit [npm] or maybe [David DM][david-dm] or even [Travis]
+
+      [npm]: https://npmjs.org/package/npms-analyzer
+      [david-dm]: https://david-dm.org/npms-io/npms-analyzer
+      [travis]: https://travis-ci.org/npms-io/npms-analyzer
+    ''').should.equal('''
+      Visit [npm] or maybe [David DM][david-dm] or even [Travis]
+
+      [david-dm]: https://david-dm.org/npms-io/npms-analyzer
+      [npm]: https://npmjs.org/package/npms-analyzer
+      [travis]: https://travis-ci.org/npms-io/npms-analyzer
+    ''')
+
   it 'should handle images', ->
     tidyMdSnippet('![text](image.jpg)').should.equal('![text](image.jpg)')
     tidyMdSnippet('![text]( image.jpg )').should.equal('![text](image.jpg)')

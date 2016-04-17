@@ -336,10 +336,10 @@ Copyright (c) 2011-2014, Christopher Jeffrey. (MIT License)
 
 See LICENSE for more info.
 
+[badge]: http://badge.fury.io/js/marked
+[breaks]: https://help.github.com/articles/github-flavored-markdown#newlines
 [gfm]: https://help.github.com/articles/github-flavored-markdown
 [gfmf]: http://github.github.com/github-flavored-markdown/
-[pygmentize]: https://github.com/rvagg/node-pygmentize-bundled
 [highlight]: https://github.com/isagalaev/highlight.js
-[badge]: http://badge.fury.io/js/marked
+[pygmentize]: https://github.com/rvagg/node-pygmentize-bundled
 [tables]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables
-[breaks]: https://help.github.com/articles/github-flavored-markdown#newlines
