@@ -483,6 +483,28 @@ describe 'inline grammar', ->
       '[![text](image.jpg)](#anchor)'
     )
 
+  it 'should handle images with reference links', ->
+    tidyMdSnippet('''
+      ![NPM version][npm-image]
+
+      [npm-image]: http://img.shields.io/npm/v/npms-analyzer.svg
+    ''').should.equal('''
+      ![NPM version][npm-image]
+
+      [npm-image]: http://img.shields.io/npm/v/npms-analyzer.svg
+    ''')
+
+  it 'should handle shorthand images with reference links', ->
+    tidyMdSnippet('''
+      ![npm-image]
+
+      [npm-image]: http://img.shields.io/npm/v/npms-analyzer.svg
+    ''').should.equal('''
+      ![npm-image]
+
+      [npm-image]: http://img.shields.io/npm/v/npms-analyzer.svg
+    ''')
+
   it 'should allow inline html to pass through', ->
     tidyMdSnippet('<span>blag</span>').should.equal('<span>blag</span>')
 

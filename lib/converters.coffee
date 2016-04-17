@@ -107,11 +107,17 @@ module.exports = [
   {
     filter: 'img'
     surroundingBlankLines: false
-    replacement: (content, node) ->
+    replacement: (content, node, links) ->
       alt = getAttribute(node, 'alt') or ''
       url = getAttribute(node, 'src') or ''
       title = getAttribute(node, 'title')
-      if title
+      referenceLink = _.find(links, {url, title})
+      if referenceLink
+        if alt.toLowerCase() is referenceLink.name
+          "![#{alt}]"
+        else
+          "![#{alt}][#{referenceLink.name}]"
+      else if title
         "![#{alt}](#{url} \"#{title}\")"
       else
         "![#{alt}](#{url})"
