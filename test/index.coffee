@@ -761,6 +761,14 @@ describe 'front-matter', ->
       My content
     ''')
 
+describe 'comments', ->
+  it 'should handle comments', ->
+    tidyMdSnippet('''
+      <!-- test -->
+    ''').should.equal('''
+      <!-- test -->
+    ''')
+
 describe 'README.md', ->
   it 'should be formatted correctly', ->
     readmeContents = fs.readFileSync(
