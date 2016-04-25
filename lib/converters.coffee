@@ -1,6 +1,6 @@
 _ = require 'lodash'
 indent = require 'indent'
-{serialize, treeAdapters} = require 'parse5'
+{serialize} = require 'parse5'
 
 languageCodeRewrite = require '../lib/language-code-rewrites'
 {delimitCode, getAttribute, stringRepeat, isBlock} = require './utils'
@@ -10,8 +10,7 @@ languageCodeRewrite = require '../lib/language-code-rewrites'
   formatRow
   getColumnWidths
 } = require './tables'
-
-treeAdapter = treeAdapters.default
+{insertTextBefore, insertText} = require './tree-adapter'
 
 CODE_HIGHLIGHT_REGEX = /(?:highlight highlight|lang(?:uage)?)-(\S+)/
 
@@ -24,8 +23,8 @@ indentChildren = (node) ->
     children = []
     children.push child for child in node.childNodes
     for child in children
-      treeAdapter.insertTextBefore(node, '\n  ', child)
-    treeAdapter.insertText(node, '\n')
+      insertTextBefore(node, '\n  ', child)
+    insertText(node, '\n')
 
   # TODO: handle indenting nested children
 

@@ -2,12 +2,11 @@ _ = require 'lodash'
 fm = require 'front-matter'
 marked = require 'marked'
 yaml = require 'js-yaml'
-{parseFragment, treeAdapters} = require 'parse5'
+{parseFragment} = require 'parse5'
 
 converters = require './converters'
 {cleanText, decodeHtmlEntities, nodeType, isBlock, isVoid} = require './utils'
-
-treeAdapter = treeAdapters.default
+{detachNode} = require './tree-adapter'
 
 ###*
  * Some people accidently skip levels in their headers (like jumping from h1 to
@@ -222,7 +221,7 @@ removeEmptyNodes = (nodes) ->
            isBlock(previousSibling) or isBlock(nextSibling)
           emptyChildren.push(child)
     for child in emptyChildren
-      treeAdapter.detachNode child
+      detachNode child
 
 module.exports = (dirtyMarkdown, options = {}) ->
   if typeof dirtyMarkdown isnt 'string'
