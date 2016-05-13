@@ -206,21 +206,23 @@ process = (node, links) ->
   node._whitespace = whitespace
   return
 
-removeEmptyNodes = (nodes) ->
-  # remove whitespace text nodes
-  for node in nodes
-    # gather a list of children to remove, because removing them right away
-    # would screw up iteration
-    emptyChildren = []
-    for child in node.childNodes
-      if isTextNode(child) and getTextNodeContent(child).trim() is ''
-        previousSibling = child.previousSibling
-        nextSibling = child.nextSibling
-        if not previousSibling or not nextSibling or
-           isBlock(previousSibling) or isBlock(nextSibling)
-          emptyChildren.push(child)
-    for child in emptyChildren
-      detachNode child
+###*
+ * Remove whitespace text nodes from children
+###
+removeEmptyNodes = (node) ->
+  # gather a list of children to remove, because removing them right away
+  # would screw up iteration
+  emptyChildren = []
+  for child in node.childNodes
+    if isTextNode(child) and getTextNodeContent(child).trim() is ''
+      previousSibling = child.previousSibling
+      nextSibling = child.nextSibling
+      if not previousSibling or not nextSibling or
+         isBlock(previousSibling) or isBlock(nextSibling)
+        emptyChildren.push(child)
+  for child in emptyChildren
+    detachNode child
+  return
 
 module.exports = (dirtyMarkdown, options = {}) ->
   if typeof dirtyMarkdown isnt 'string'
@@ -254,11 +256,11 @@ module.exports = (dirtyMarkdown, options = {}) ->
   root = parseFragment(html, {treeAdapter})
 
   # remove empty nodes that are direct children of the root first
-  removeEmptyNodes([root])
+  removeEmptyNodes(root)
 
   fixHeaders(root, options.ensureFirstHeaderIsH1)
   nodes = bfsOrder(root)
-  removeEmptyNodes(nodes)
+  removeEmptyNodes(node) for node in nodes
 
   # find converters, starting from the top of the tree. if a converter cannot be
   # found, then the element and all children should be treated as HTML
