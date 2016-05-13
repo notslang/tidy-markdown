@@ -9,9 +9,12 @@ treeAdapter = require './tree-adapter'
 {cleanText, decodeHtmlEntities, isBlock, isVoid} = require './utils'
 
 {
+  createElement
   detachNode
   getCommentNodeContent
   getTextNodeContent
+  insertBefore
+  insertText
   isCommentNode
   isElementNode
   isTextNode
@@ -80,6 +83,13 @@ fixHeaders = (dom, ensureFirstHeaderIsH1) ->
     i++
   return
 
+convertCommentNode = (node) ->
+  commentElement = createElement('_comment', null, [])
+  insertText(commentElement, getCommentNodeContent(node))
+  insertBefore(node.parent, commentElement, node)
+  detachNode(node)
+  return commentElement
+
 ###*
  * Flattens DOM tree into single array
 ###
@@ -90,6 +100,7 @@ bfsOrder = (node) ->
     elem = inqueue.shift()
     outqueue.push elem
     for child in elem.childNodes
+      if isCommentNode(child) then child = convertCommentNode(child)
       if isElementNode(child) then inqueue.push child
 
   outqueue.shift() # remove root node

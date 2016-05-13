@@ -223,6 +223,10 @@ module.exports = [
     replacement: (content) -> content
   }
   {
+    filter: '_comment'
+    replacement: (content) -> "<!-- #{content} -->"
+  }
+  {
     filter: fallback
     surroundingBlankLines: true
     replacement: (content, node) ->
