@@ -1,7 +1,7 @@
 {
   "name": "tidy-markdown",
   "description": "Fix ugly markdown.",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": "Sean Lang",
   "bin": {
     "tidy-markdown": "./bin/index.js"
