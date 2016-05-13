@@ -3,6 +3,7 @@ _ = require 'lodash'
 
 blocks = require './block-tags'
 voids = require './void-tags'
+{getAttrList, getTextNodeContent} = require './tree-adapter'
 
 ###*
  * @param {String} x The string to be repeated
@@ -37,28 +38,17 @@ delimitCode = (code, delimiter) ->
   if code[-1...] is '`' then code += ' ' # add ending space
   return delimiter + code + delimiter
 
-nodeType = (node) ->
-  if node.nodeName is '#text'
-    3 # text
-  else if node.tagName?
-    1 # element
-  else
-    throw new Error('cannot detect nodeType')
-
-  # cdata: 4
-  # comment: 8
-
 getAttribute = (node, attribute) ->
-  _.find(node.attrs, name: attribute)?.value or null
+  _.find(getAttrList(node), name: attribute)?.value or null
 
 cleanText = (node) ->
   parent = node.parentNode
-  text = decodeHtmlEntities(node.value)
+  text = decodeHtmlEntities(getTextNodeContent(node))
 
-  if 'pre' not in [parent.nodeName, parent.parentNode.nodeName]
+  if 'pre' not in [parent.tagName, parent.parentNode?.tagName]
     text = text.replace /\s+/g, ' ' # excessive whitespace & linebreaks
 
-  if parent.nodeName in ['code', 'pre']
+  if parent.tagName in ['code', 'pre']
     # these tags contain whitespace-sensitive content, so we can't apply
     # advanced text cleaning
     text
@@ -78,12 +68,12 @@ decodeHtmlEntities = (text) ->
   htmlEntities.decode(text)
 
 isBlock = (node) ->
-  if node.nodeName is 'code' and node.parentNode.nodeName is 'pre'
+  if node.tagName is 'code' and node.parentNode?.tagName is 'pre'
     true # code tags in a pre are treated as blocks
   else
-    node.nodeName in blocks
+    node.tagName in blocks
 
-isVoid = (node) -> node.nodeName in voids
+isVoid = (node) -> node.tagName in voids
 
 module.exports = {
   cleanText
@@ -92,6 +82,5 @@ module.exports = {
   getAttribute
   isBlock
   isVoid
-  nodeType
   stringRepeat
 }

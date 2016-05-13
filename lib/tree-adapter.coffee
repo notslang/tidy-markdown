@@ -1,3 +1,3 @@
 {treeAdapters} = require 'parse5'
 
-module.exports = treeAdapters.default
+module.exports = treeAdapters.htmlparser2

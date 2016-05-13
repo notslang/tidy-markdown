@@ -1,7 +1,8 @@
 _ = require 'lodash'
 pad = require 'pad'
 
-{getAttribute, nodeType} = require './utils'
+{getAttribute} = require './utils'
+{isTextNode, isElementNode} = require './tree-adapter'
 
 ###*
  * Find the length of the longest string in an array
@@ -46,8 +47,8 @@ extractColumns = (row) ->
     if column.tagName in ['th', 'td']
       columns.push(column._replacement)
       alignments.push(getCellAlignment(column))
-    else if column.nodeName isnt '#text'
-      throw new Error("Cannot handle #{column.nodeName} in table row")
+    else if isTextNode(column)
+      throw new Error("Cannot handle #{column.tagName} in table row")
   return {columns, alignments}
 
 extractRows = (node) ->
@@ -74,7 +75,7 @@ extractRows = (node) ->
               "Alignment in a table column #{i} is not consistent"
             )
 
-      else if nodeType(child) is 1
+      else if isElementNode(child)
         inqueue.push child
 
   # when there are more alignments than headers (from columns that extend beyond

@@ -5,8 +5,17 @@ yaml = require 'js-yaml'
 {parseFragment} = require 'parse5'
 
 converters = require './converters'
-{cleanText, decodeHtmlEntities, nodeType, isBlock, isVoid} = require './utils'
-{detachNode} = require './tree-adapter'
+treeAdapter = require './tree-adapter'
+{cleanText, decodeHtmlEntities, isBlock, isVoid} = require './utils'
+
+{
+  detachNode
+  getCommentNodeContent
+  getTextNodeContent
+  isCommentNode
+  isElementNode
+  isTextNode
+} = treeAdapter
 
 ###*
  * Some people accidently skip levels in their headers (like jumping from h1 to
@@ -19,7 +28,7 @@ converters = require './converters'
 fixHeaders = (dom, ensureFirstHeaderIsH1) ->
   topLevelHeaders = [] # the headers that aren't nested in any other elements
   for child in dom.childNodes
-    if /h[0-6]/.test child.nodeName
+    if /h[0-6]/.test child.tagName
       topLevelHeaders.push child
 
   # there are no headers in this document, so skip
@@ -32,7 +41,7 @@ fixHeaders = (dom, ensureFirstHeaderIsH1) ->
   if not ensureFirstHeaderIsH1
     # set the depth to `firstHeaderDepth - 1` so the rest of the function will
     # act as though that was the root
-    lastHeaderDepth = topLevelHeaders[0].nodeName[1] - 1
+    lastHeaderDepth = topLevelHeaders[0].tagName[1] - 1
 
   # we track the rootDepth to ensure that no headers go "below" the level of the
   # first one. for example h3, h4, h2 would need to be corrected to h3, h4, h3.
@@ -41,7 +50,7 @@ fixHeaders = (dom, ensureFirstHeaderIsH1) ->
 
   i = 0
   while i < topLevelHeaders.length
-    headerDepth = parseInt topLevelHeaders[i].nodeName[1]
+    headerDepth = parseInt topLevelHeaders[i].tagName[1]
     if rootDepth <= headerDepth <= lastHeaderDepth + 1
       lastHeaderDepth = headerDepth # header follows all rules, move on to next
     else
@@ -59,9 +68,9 @@ fixHeaders = (dom, ensureFirstHeaderIsH1) ->
         gap = headerDepth - (lastHeaderDepth + 1)
 
       for e in [i...topLevelHeaders.length]
-        childHeaderDepth = parseInt topLevelHeaders[e].nodeName[1]
+        childHeaderDepth = parseInt topLevelHeaders[e].tagName[1]
         if childHeaderDepth >= headerDepth
-          topLevelHeaders[e].nodeName = 'h' + (childHeaderDepth - gap)
+          topLevelHeaders[e].tagName = 'h' + (childHeaderDepth - gap)
         else
           break
 
@@ -81,7 +90,7 @@ bfsOrder = (node) ->
     elem = inqueue.shift()
     outqueue.push elem
     for child in elem.childNodes
-      if nodeType(child) is 1 then inqueue.push child
+      if isElementNode(child) then inqueue.push child
 
   outqueue.shift() # remove root node
   outqueue
@@ -90,22 +99,23 @@ bfsOrder = (node) ->
  * Contructs a Markdown string of replacement text for a given node
 ###
 getContent = (node) ->
-  if node.nodeName is '#text' then return node.value
+  if isTextNode(node) then return getTextNodeContent(node)
 
   content = ''
   previousSibling = null
   for child in node.childNodes
     childText = (
-      switch nodeType(child)
-        when 1
-          child._replacement
-        when 3
-          cleanText(child)
+      if isElementNode(child)
+        child._replacement
+      else if isTextNode(child)
+        cleanText(child)
+      else
+        throw new Error("Unsupported node type: #{child.type}")
     )
 
     # prevent extra whitespace around `<br>`s
-    if child.nodeName is 'br' then content = content.trimRight()
-    if previousSibling?.nodeName is 'br' then childText = childText.trimLeft()
+    if child.tagName is 'br' then content = content.trimRight()
+    if previousSibling?.tagName is 'br' then childText = childText.trimLeft()
 
     if previousSibling?
       whitespaceSeparator = (
@@ -123,9 +133,9 @@ getContent = (node) ->
 
 canConvert = (node, filter) ->
   if typeof filter is 'string'
-    return filter is node.nodeName
+    return filter is node.tagName
   if Array.isArray(filter)
-    return node.nodeName.toLowerCase() in filter
+    return node.tagName in filter
   else if typeof filter is 'function'
     return filter(node)
   else
@@ -136,25 +146,12 @@ findConverter = (node) ->
   for converter in converters
     if canConvert(node, converter.filter) then return converter
 
-###*
- * @return {Integer} The index of the given `node` relative to all the children
-   of its parent
-###
-getNodeIndex = (node) ->
-  node.parentNode.childNodes.indexOf(node)
-
-getPreviousSibling = (node) ->
-  node.parentNode.childNodes[getNodeIndex(node) - 1]
-
-getNextSibling = (node) ->
-  node.parentNode.childNodes[getNodeIndex(node) + 1]
-
 isFlankedByWhitespace = (side, node) ->
   if side is 'left'
-    sibling = getPreviousSibling(node)
+    sibling = node.previousSibling
     regExp = /\s$/
   else
-    sibling = getNextSibling(node)
+    sibling = node.nextSibling
     regExp = /^\s/
 
   if sibling and not isBlock(sibling)
@@ -191,7 +188,7 @@ process = (node, links) ->
   content = getContent(node)
   converter = node._converter
 
-  if node.nodeName isnt 'pre' and node.parentNode.nodeName isnt 'pre'
+  if 'pre' not in [node.tagName, node.parentNode.tagName]
     content = content.trim() # pre tags are whitespace-sensitive
 
   if converter.surroundingBlankLines
@@ -201,7 +198,7 @@ process = (node, links) ->
     if converter.trailingWhitespace?
       whitespace.trailing += converter.trailingWhitespace
 
-  if node.nodeName is 'li'
+  if node.tagName is 'li'
     # li isn't allowed to have leading whitespace
     whitespace.leading = ''
 
@@ -212,11 +209,13 @@ process = (node, links) ->
 removeEmptyNodes = (nodes) ->
   # remove whitespace text nodes
   for node in nodes
+    # gather a list of children to remove, because removing them right away
+    # would screw up iteration
     emptyChildren = []
     for child in node.childNodes
-      if child.nodeName is '#text' and child.value.trim() is ''
-        previousSibling = getPreviousSibling(child)
-        nextSibling = getNextSibling(child)
+      if isTextNode(child) and getTextNodeContent(child).trim() is ''
+        previousSibling = child.previousSibling
+        nextSibling = child.nextSibling
         if not previousSibling or not nextSibling or
            isBlock(previousSibling) or isBlock(nextSibling)
           emptyChildren.push(child)
@@ -252,7 +251,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
 
   # Escape potential ol triggers
   html = html.replace(/(\d+)\. /g, '$1\\. ')
-  root = parseFragment(html)
+  root = parseFragment(html, {treeAdapter})
 
   # remove empty nodes that are direct children of the root first
   removeEmptyNodes([root])

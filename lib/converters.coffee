@@ -3,6 +3,7 @@ indent = require 'indent'
 {serialize} = require 'parse5'
 
 languageCodeRewrite = require '../lib/language-code-rewrites'
+treeAdapter = require './tree-adapter'
 {delimitCode, getAttribute, stringRepeat, isBlock} = require './utils'
 {
   extractRows
@@ -10,14 +11,14 @@ languageCodeRewrite = require '../lib/language-code-rewrites'
   formatRow
   getColumnWidths
 } = require './tables'
-{insertTextBefore, insertText} = require './tree-adapter'
 
 CODE_HIGHLIGHT_REGEX = /(?:highlight highlight|lang(?:uage)?)-(\S+)/
+{insertTextBefore, insertText, isTextNode} = treeAdapter
 
 indentChildren = (node) ->
   allChildrenAreElements = true
   for child in node.childNodes
-    if child.nodeName is '#text' then allChildrenAreElements = false
+    if isTextNode(child) then allChildrenAreElements = false
 
   if allChildrenAreElements
     children = []
@@ -123,7 +124,7 @@ module.exports = [
   }
   {
     filter: (node) ->
-      node.type is 'checkbox' and node.parentNode.nodeName is 'li'
+      node.type is 'checkbox' and node.parentNode.tagName is 'li'
     surroundingBlankLines: false
     replacement: (content, node) ->
       (if node.checked then '[x]' else '[ ]') + ' '
@@ -150,11 +151,11 @@ module.exports = [
     filter: 'pre'
     surroundingBlankLines: true
     replacement: (content, node) ->
-      if node.childNodes[0]?.nodeName is 'code'
+      if node.childNodes[0]?.tagName is 'code'
         language = getAttribute(
           node.childNodes[0], 'class'
         )?.match(CODE_HIGHLIGHT_REGEX)?[1]
-      if not language? and node.parentNode.nodeName is 'div'
+      if not language? and node.parentNode.tagName is 'div'
         language = getAttribute(
           node.parentNode, 'class'
         )?.match(CODE_HIGHLIGHT_REGEX)?[1]
@@ -168,7 +169,7 @@ module.exports = [
     filter: 'code'
     surroundingBlankLines: false
     replacement: (content, node) ->
-      if node.parentNode.nodeName isnt 'pre'
+      if node.parentNode.tagName isnt 'pre'
         delimitCode(content, '`') # inline code
       else
         # code that we'll handle once it reaches the pre tag. we only bother
@@ -178,7 +179,7 @@ module.exports = [
   }
   {
     filter: (node) ->
-      node.nodeName is 'div' and CODE_HIGHLIGHT_REGEX.test(node.className)
+      node.tagName is 'div' and CODE_HIGHLIGHT_REGEX.test(node.className)
     surroundingBlankLines: true
     replacement: (content) -> content
   }
@@ -186,7 +187,7 @@ module.exports = [
     filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
     surroundingBlankLines: true
     replacement: (content, node) ->
-      hLevel = node.nodeName[1]
+      hLevel = node.tagName[1]
       "#{stringRepeat('#', hLevel)} #{content}"
   }
   {
@@ -210,7 +211,7 @@ module.exports = [
         content = indent(content, '  ').trimLeft()
       parent = node.parentNode
       prefix = (
-        if parent.nodeName is 'ol'
+        if parent.tagName is 'ol'
           parent.childNodes.indexOf(node) + 1 + '. '
         else '- '
       )
@@ -226,10 +227,9 @@ module.exports = [
     surroundingBlankLines: true
     replacement: (content, node) ->
       indentChildren(node)
-      serialize({
-        nodeName: '#document-fragment'
-        quirksMode: false
-        childNodes: [node]
-      })
+      serialize(
+        {children: [node], nodeName: '#document-fragment', quirksMode: false}
+        {treeAdapter}
+      )
   }
 ]
