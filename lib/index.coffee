@@ -133,14 +133,13 @@ getContent = (node) ->
 
 canConvert = (node, filter) ->
   if typeof filter is 'string'
-    return filter is node.tagName
-  if Array.isArray(filter)
-    return node.tagName in filter
+    filter is node.tagName
+  else if Array.isArray(filter)
+    node.tagName in filter
   else if typeof filter is 'function'
-    return filter(node)
+    filter(node)
   else
     throw new TypeError('`filter` needs to be a string, array, or function')
-  return
 
 findConverter = (node) ->
   for converter in converters
