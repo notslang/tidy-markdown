@@ -10,19 +10,6 @@ describe 'headings', ->
     tidyMdSnippet('<h1>test</h1>').should.equal('# test')
     tidyMdSnippet('<h1> test </h1>').should.equal('# test')
 
-  it 'should fix spaces between heading and text', ->
-    tidyMdSnippet('''
-      #test
-      ##test
-      ###test
-    ''').should.equal('''
-      # test
-
-      ## test
-
-      ### test
-    ''')
-
   it 'should fix atx-style headings', ->
     tidyMdSnippet('''
       # test #
@@ -139,10 +126,10 @@ describe 'headings', ->
     ''')
 
   it 'should strip trailing whitespace', ->
-    tidyMdSnippet('#test ').should.equal('# test')
+    tidyMdSnippet('# test ').should.equal('# test')
 
   it 'should strip excessive whitespace', ->
-    tidyMdSnippet('#test   header').should.equal('# test header')
+    tidyMdSnippet('# test   header').should.equal('# test header')
 
 describe 'paragraphs', ->
   it 'should get rid of mid-paragraph linebreaks', ->
@@ -419,6 +406,13 @@ describe 'inline grammar', ->
     tidyMdSnippet('*italic*').should.equal('_italic_')
     tidyMdSnippet('_italic_').should.equal('_italic_')
 
+  it 'should handle complex italic text (according to commonmark)', ->
+    tidyMdSnippet('''
+      end_of_line _(supported values: `lf`, `crlf`)_
+    ''').should.equal('''
+      end_of_line _(supported values: `lf`, `crlf`)_
+    ''')
+
   it 'should convert code tags', ->
     tidyMdSnippet('<code>code</code>').should.equal('`code`')
 
@@ -619,7 +613,7 @@ describe 'tables', ->
     ''').should.equal('''
       Name               | Type    | Description      | Choices
       ------------------ | ------- | ---------------- | -------
-      creator_license_id | unknown | License which...
+      creator_license_id | unknown | License which... |
 
     ''')
 
@@ -628,14 +622,14 @@ describe 'tables', ->
       Name |  Type |  Description | Choices
       :----| :----: |  ------------- | ------:
       0,0 |  0,1 | 0,2
-          |  1,1 | 1,2 |     | |
+          |  1,1 | 1,2 |     |  |
       2,0 |  2,1 |     | 2,3
 
     ''').should.equal('''
       Name | Type | Description | Choices
       :--- | :--: | ----------- | ------:
-      0,0  | 0,1  | 0,2
-           | 1,1  | 1,2         |         |  |
+      0,0  | 0,1  | 0,2         |
+           | 1,1  | 1,2         |         |
       2,0  | 2,1  |             |     2,3
 
     ''')

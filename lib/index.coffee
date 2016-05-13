@@ -1,6 +1,9 @@
 _ = require 'lodash'
 fm = require 'front-matter'
-marked = require 'marked'
+md = require('markdown-it')(
+  html: true
+  linkify: true
+)
 yaml = require 'js-yaml'
 {parseFragment} = require 'parse5'
 
@@ -247,9 +250,10 @@ module.exports = (dirtyMarkdown, options = {}) ->
   if Object.keys(content.attributes).length isnt 0
     out += '---\n' + yaml.safeDump(content.attributes).trim() + '\n---\n\n'
 
-  ast = marked.lexer(content.body)
+  env = {}
+  ast = md.parse(content.body, env)
 
-  rawLinks = ast.links # see issue: https://github.com/chjj/marked/issues/472
+  rawLinks = env.references
   links = []
   for link, value of rawLinks
     links.push(
@@ -259,7 +263,7 @@ module.exports = (dirtyMarkdown, options = {}) ->
     )
   links = _.sortBy(links, ['name', 'url'])
 
-  html = marked.parser(ast)
+  html = md.renderer.render(ast, md.options, env)
 
   # Escape potential ol triggers
   html = html.replace(/(\d+)\. /g, '$1\\. ')
