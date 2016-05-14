@@ -243,11 +243,16 @@ module.exports = (dirtyMarkdown, options = {}) ->
   out = ''
 
   # handle yaml front-matter
-  content = fm(dirtyMarkdown)
-  if Object.keys(content.attributes).length isnt 0
-    out += '---\n' + yaml.safeDump(content.attributes).trim() + '\n---\n\n'
+  try
+    content = fm(dirtyMarkdown)
+    if Object.keys(content.attributes).length isnt 0
+      out += '---\n' + yaml.safeDump(content.attributes).trim() + '\n---\n\n'
+    content = content.body
+  catch
+    # parsing failed, just ignore front-matter
+    content = dirtyMarkdown
 
-  ast = marked.lexer(content.body)
+  ast = marked.lexer(content)
 
   rawLinks = ast.links # see issue: https://github.com/chjj/marked/issues/472
   links = []

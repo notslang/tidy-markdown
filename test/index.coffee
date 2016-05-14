@@ -761,6 +761,17 @@ describe 'front-matter', ->
       My content
     ''')
 
+  it 'should ignore stuff that looks like (but isn\'t) front-matter', ->
+    tidyMdSnippet('''
+      ---
+      `hi`
+      ---
+    ''').should.equal('''
+      --------------------------------------------------------------------------------
+
+      # `hi`
+    ''')
+
 describe 'comments', ->
   it 'should handle comments', ->
     tidyMdSnippet('''
