@@ -345,7 +345,7 @@ describe 'code blocks', ->
       # another H1 header
       <pre>
 
-      this is some indented code w/ a trailing & leading newline
+      this is some more code
 
       </pre>
     ''').should.equal('''
@@ -358,9 +358,7 @@ describe 'code blocks', ->
       # another H1 header
 
       ```
-
-      this is some indented code w/ a trailing & leading newline
-
+      this is some more code
       ```
     ''')
 
@@ -391,6 +389,33 @@ describe 'code blocks', ->
 
 
       ...with several linebreaks in it
+      ```
+    ''')
+
+  it 'should strip leading & trailing whitespace from code', ->
+    tidyMdSnippet('''
+      ```
+          this is some code...
+
+        ...with leading whitespace
+      ```
+    ''').should.equal('''
+      ```
+      this is some code...
+
+        ...with leading whitespace
+      ```
+    ''')
+
+    tidyMdSnippet('''
+      ```
+
+      this is some code w/ linebreaks before & after it
+
+      ```
+    ''').should.equal('''
+      ```
+      this is some code w/ linebreaks before & after it
       ```
     ''')
 

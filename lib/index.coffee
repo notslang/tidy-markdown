@@ -195,11 +195,8 @@ flankingWhitespace = (node) ->
  * `_replacement`
 ###
 process = (node, links) ->
-  content = getContent(node)
+  content = getContent(node).trim()
   converter = node._converter
-
-  if 'pre' not in [node.tagName, node.parentNode.tagName]
-    content = content.trim() # pre tags are whitespace-sensitive
 
   if converter.surroundingBlankLines
     whitespace = {leading: '\n\n', trailing: '\n\n'}

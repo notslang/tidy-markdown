@@ -163,7 +163,7 @@ module.exports = [
         language = language.toLowerCase()
         if languageCodeRewrite[language]?
           language = languageCodeRewrite[language]
-      delimitCode("#{language or ''}\n#{content}", '```')
+      delimitCode("#{language or ''}\n#{content}\n", '```')
   }
   {
     filter: 'code'
