@@ -419,10 +419,26 @@ describe 'code blocks', ->
       ```
     ''')
 
+# NOTE: the terms "bold" & "italic" here are technically wrong... presentation
+# depends upon the user agent
 describe 'inline grammar', ->
   it 'should handle special characters', ->
     tidyMdSnippet('2 < 4').should.equal('2 < 4')
     tidyMdSnippet('5 > 4').should.equal('5 > 4')
+
+  it 'should convert <strong> tags', ->
+    tidyMdSnippet(
+      'some <strong>bold</strong> text'
+    ).should.equal(
+      'some **bold** text'
+    )
+
+  it 'should convert <b> tags', ->
+    tidyMdSnippet(
+      'some <b>bold</b> text'
+    ).should.equal(
+      'some **bold** text'
+    )
 
   it 'should handle bold text', ->
     tidyMdSnippet('**bold**').should.equal('**bold**')
@@ -436,6 +452,11 @@ describe 'inline grammar', ->
     )
     tidyMdSnippet(
       'some <em> italic </em> text'
+    ).should.equal(
+      'some _italic_ text'
+    )
+    tidyMdSnippet(
+      'some<em> italic </em>text'
     ).should.equal(
       'some _italic_ text'
     )
