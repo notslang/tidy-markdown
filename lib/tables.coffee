@@ -4,6 +4,12 @@ pad = require 'pad'
 {getAttribute} = require './utils'
 {isTextNode, isElementNode} = require './tree-adapter'
 
+utf8CharacterCount = (str) ->
+    count = 0
+    for c in str
+        if c.charCodeAt() > 0x007f then count++
+    return count
+
 ###*
  * Find the length of the longest string in an array
  * @param {String[]} array Array of strings
@@ -11,7 +17,7 @@ pad = require 'pad'
 longestStringInArray = (array) ->
   longest = 0
   for str in array
-    len = str.length
+    len = str.length + utf8CharacterCount(str)
     if len > longest then longest = len
   return longest
 
@@ -89,18 +95,19 @@ extractRows = (node) ->
 formatRow = (row, alignments, columnWidths) ->
   # apply padding around each cell for alignment and column width
   for i in [0...row.length]
+    columnWidth = columnWidths[i] - utf8CharacterCount(row[i])
     row[i] = (
       switch alignments[i]
         when 'right'
-          pad(columnWidths[i], row[i])
+          pad(columnWidth, row[i])
         when 'center'
           # rounding causes a bias to the left because we can't have half a char
-          whitespace = columnWidths[i] - row[i].length
+          whitespace = columnWidth - row[i].length
           leftPadded = pad(Math.floor(whitespace / 2) + row[i].length, row[i])
           pad(leftPadded, Math.ceil(whitespace / 2) + leftPadded.length)
         else
           # left is the default alignment when formatting
-          pad(row[i], columnWidths[i])
+          pad(row[i], columnWidth)
     )
 
   # trimRight is to remove any trailing whitespace added by the padding
