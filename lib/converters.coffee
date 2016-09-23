@@ -72,7 +72,7 @@ module.exports = [
   {
     filter: ['em', 'i']
     surroundingBlankLines: false
-    replacement: (content) -> if content.indexOf("_") == -1 then "_#{content}_" else "*#{content}*"
+    replacement: (content) -> if '_' in content then "*#{content}*" else "_#{content}_"
   }
   {
     filter: ['strong', 'b']
