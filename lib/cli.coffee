@@ -25,7 +25,7 @@ argv = argparser.parseArgs()
 process.stdin.setEncoding 'utf8'
 process.stdin.on 'readable', ->
   buffer = ''
-  while null != (chunk = process.stdin.read())
+  while (chunk = process.stdin.read()) isnt null
     buffer += chunk
   if buffer isnt ''
     process.stdout.write tidyMarkdown(buffer, argv)
