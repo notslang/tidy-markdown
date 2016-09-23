@@ -97,8 +97,9 @@ module.exports = [
           "[#{content}]"
         else
           "[#{content}][#{referenceLink.name}]"
-      else if not title and url isnt '' and content is url
-        "<#{url}>"
+      else if not title and url isnt '' and
+              (content is url or content is url.replace(/^mailto:/, ''))
+        "<#{content}>"
       else if title
         "[#{content}](#{url} \"#{title}\")"
       else

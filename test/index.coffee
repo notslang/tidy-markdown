@@ -513,6 +513,13 @@ describe 'inline grammar', ->
       '<https://github.com/slang800/tidy-markdown>'
     )
 
+  it 'should handle shorthand email links', ->
+    tidyMdSnippet(
+      '<slang800@gmail.com>'
+    ).should.equal(
+      '<slang800@gmail.com>'
+    )
+
   it 'should handle reference links', ->
     tidyMdSnippet('''
       [NPM version][npm-url]
