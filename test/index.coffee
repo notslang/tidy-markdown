@@ -465,6 +465,12 @@ describe 'inline grammar', ->
     tidyMdSnippet('*italic*').should.equal('_italic_')
     tidyMdSnippet('_italic_').should.equal('_italic_')
 
+  it 'should use asterisks when italic text includes underscores', ->
+    # some markdown compilers don't handle underscores in italicised text
+    # properly, when the italics are denoted with underscores.
+    tidyMdSnippet('*I will be a_star!*').should.equal('*I will be a_star!*')
+    tidyMdSnippet('_I will be a_star!_').should.equal('*I will be a_star!*')
+
   it 'should convert code tags', ->
     tidyMdSnippet('<code>code</code>').should.equal('`code`')
 
