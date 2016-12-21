@@ -805,6 +805,17 @@ describe 'html', ->
       </dl>
     ''')
 
+  it 'should convert basic html', ->
+    tidyMd('''
+      <h1>test</h1>
+      <p>test text</p>
+    ''').should.equal('''
+      # test
+
+      test text
+
+    ''')
+
 describe 'front-matter', ->
   it 'should handle front-matter', ->
     tidyMdSnippet('''
