@@ -42,6 +42,14 @@ And, of course, we can output to a file too:
 $ tidy-markdown < ./ugly-markdown > ./clean-markdown
 ```
 
+### Editing In-place
+
+If you want to rewrite a file in-place, you can use `sponge` from [moreutils](https://joeyh.name/code/moreutils/). If you did `tidy-markdown < ./README.md > ./README.md` you'd end up with an empty file.
+
+```bash
+$ tidy-markdown < ./README.md | sponge ./README.md
+```
+
 ### Docs
 
 The `--help` arg will make it show a usage page:
@@ -61,14 +69,6 @@ Optional arguments:
                         This is useful if the markdown you're processing
                         isn't a full document, but rather a piece of a larger
                         document.
-```
-
-### Editing In-place
-
-If you want to rewrite a file in-place, you can use `sponge` from [moreutils](https://joeyh.name/code/moreutils/). If you did `tidy-markdown < ./README.md > ./README.md` you'd end up with an empty file.
-
-```bash
-$ tidy-markdown < ./README.md | sponge ./README.md
 ```
 
 ## API
