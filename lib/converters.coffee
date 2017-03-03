@@ -4,7 +4,7 @@ indent = require 'indent'
 
 languageCodeRewrite = require '../lib/language-code-rewrites'
 treeAdapter = require './tree-adapter'
-{delimitCode, getAttribute, stringRepeat, isBlock} = require './utils'
+{delimitCode, getAttribute, isBlock} = require './utils'
 {
   extractRows
   formatHeaderSeparator
@@ -192,12 +192,12 @@ module.exports = [
     surroundingBlankLines: true
     replacement: (content, node) ->
       hLevel = node.tagName[1]
-      "#{stringRepeat('#', hLevel)} #{content}"
+      "#{'#'.repeat(hLevel)} #{content}"
   }
   {
     filter: 'hr'
     surroundingBlankLines: true
-    replacement: -> stringRepeat('-', 80)
+    replacement: -> '-'.repeat(80)
   }
   {
     filter: 'blockquote'

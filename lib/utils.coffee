@@ -6,22 +6,6 @@ voids = require './void-tags'
 {getAttrList, getTextNodeContent} = require './tree-adapter'
 
 ###*
- * @param {String} x The string to be repeated
- * @param {String} n Number of times to repeat the string
- * @return {String} The result of repeating the string
-###
-stringRepeat = (x, n) ->
-  s = ''
-  loop
-    if n & 1 then s += x
-    n >>= 1
-    if n
-      x += x
-    else
-      break
-  return s
-
-###*
  * Wrap code with delimiters
  * @param {String} code
  * @param {String} delimiter The delimiter to start with, additional backticks
@@ -82,5 +66,4 @@ module.exports = {
   getAttribute
   isBlock
   isVoid
-  stringRepeat
 }
