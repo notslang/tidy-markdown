@@ -29,6 +29,9 @@ indentChildren = (node) ->
 
   # TODO: handle indenting nested children
 
+# regex taken from https://github.com/chjj/marked/blob/8f9d0b/lib/marked.js#L452
+isValidLink = (link) -> /.+(?:@|:\/).+/.test(link)
+
 fallback = -> true
 
 ###*
@@ -97,11 +100,11 @@ module.exports = [
           "[#{content}]"
         else
           "[#{content}][#{referenceLink.name}]"
-      else if not title and url isnt '' and
-              (content is url or content is url.replace(/^mailto:/, ''))
-        "<#{content}>"
       else if title
         "[#{content}](#{url} \"#{title}\")"
+      else if isValidLink(url) and
+              (content is url or content is url.replace(/^mailto:/, ''))
+        "<#{content}>"
       else
         "[#{content}](#{url})"
   }

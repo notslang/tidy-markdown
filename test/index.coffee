@@ -519,9 +519,30 @@ describe 'inline grammar', ->
       '<https://github.com/slang800/tidy-markdown>'
     )
 
+  it 'should convert shorthand links', ->
+    tidyMdSnippet(
+      '[https://github.com/slang800](https://github.com/slang800)'
+    ).should.equal(
+      '<https://github.com/slang800>'
+    )
+
+  it 'should not convert relative shorthand links', ->
+    tidyMdSnippet(
+      '[atomtest.md](atomtest.md)'
+    ).should.equal(
+      '[atomtest.md](atomtest.md)'
+    )
+
   it 'should handle shorthand email links', ->
     tidyMdSnippet(
       '<slang800@gmail.com>'
+    ).should.equal(
+      '<slang800@gmail.com>'
+    )
+
+  it 'should convert shorthand email links', ->
+    tidyMdSnippet(
+      '<a href="mailto:slang800@gmail.com">slang800@gmail.com</a>'
     ).should.equal(
       '<slang800@gmail.com>'
     )
