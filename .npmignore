@@ -1,5 +1,4 @@
-test
-src
 .travis.yml
 Makefile
-docs
+src
+test

@@ -20,7 +20,8 @@
   "devDependencies": {
     "coffee-script": "^1.12.4",
     "mocha": "^3.2.0",
-    "should": "^11.2.0"
+    "should": "^11.2.0",
+    "standard-format": "^2.2.4"
   },
   "keywords": [
     "markdown",
@@ -33,6 +34,6 @@
   "main": "lib",
   "repository": "git://github.com/slang800/tidy-markdown.git",
   "scripts": {
-    "test": "mocha"
+    "test": "make test"
   }
 }

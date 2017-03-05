@@ -1,3 +1,3 @@
 #!/usr/bin/env node
-require('coffee-script/register');
+'use_strict'
 require('../lib/cli');
