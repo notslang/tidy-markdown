@@ -1,6 +1,6 @@
 fs = require 'fs'
 should = require 'should'
-tidyMd = require '../lib'
+tidyMd = require '../'
 
 # tidyMd without the trailing newline
 tidyMdSnippet = (text, options) -> tidyMd(text, options).trimRight()
