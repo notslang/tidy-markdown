@@ -1,8 +1,17 @@
 _ = require 'lodash'
-pad = require 'pad'
+wcwidth = require 'wcwidth'
 
 {getAttribute} = require './utils'
 {isTextNode, isElementNode} = require './tree-adapter'
+
+pad = (text, length, char = ' ') ->
+  invert = typeof text is 'number'
+  [length, text] = [text, length] if invert
+  text = text.toString()
+  res = ''
+  padlength = length - wcwidth(text)
+  res += char.repeat padlength
+  if invert then res + text else text + res
 
 ###*
  * Find the length of the longest string in an array
@@ -11,7 +20,7 @@ pad = require 'pad'
 longestStringInArray = (array) ->
   longest = 0
   for str in array
-    len = str.length
+    len = wcwidth(str)
     if len > longest then longest = len
   return longest
 
