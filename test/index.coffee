@@ -619,6 +619,16 @@ describe 'inline grammar', ->
       '![alt text](/path/to/img.jpg "Title")'
     )
 
+  it 'should convert <img> tags', ->
+    tidyMdSnippet('<img src="/path/to/img.jpg" alt="Image"/>').should.equal('![Image](/path/to/img.jpg)')
+
+  it 'should ignore <img> tags with extra attributes', ->
+    tidyMdSnippet(
+      '<img src="/path/to/img.jpg" alt="Image" style="width:50px;">'
+    ).should.equal(
+      '<img src="/path/to/img.jpg" alt="Image" style="width:50px;">'
+    )
+
   it 'should handle images in links', ->
     tidyMdSnippet(
       '[![text]( image.jpg )]( #anchor )'

@@ -4,7 +4,7 @@ indent = require 'indent'
 
 languageCodeRewrite = require '../lib/language-code-rewrites'
 treeAdapter = require './tree-adapter'
-{delimitCode, getAttribute, isBlock} = require './utils'
+{delimitCode, getAttribute, noExtraAttributes, isBlock} = require './utils'
 {
   extractRows
   formatHeaderSeparator
@@ -109,7 +109,9 @@ module.exports = [
         "[#{content}](#{url})"
   }
   {
-    filter: 'img'
+    filter: (node) ->
+      # Ignore img nodes that have custom styling or other attributes
+      node.tagName is 'img' and noExtraAttributes(node, 'alt', 'src', 'title')
     surroundingBlankLines: false
     replacement: (content, node, links) ->
       alt = getAttribute(node, 'alt') or ''
