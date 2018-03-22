@@ -25,6 +25,13 @@ delimitCode = (code, delimiter) ->
 getAttribute = (node, attribute) ->
   _.find(getAttrList(node), name: attribute)?.value or null
 
+###*
+ * Check if node has more attributes than ones provided
+ * @return {boolean} true if no extra attributes otherwise false
+###
+noExtraAttributes = (node, attributes...) ->
+  _.isEmpty(_.without(_.map(getAttrList(node), 'name'), attributes...))
+
 cleanText = (node) ->
   parent = node.parentNode
   text = decodeHtmlEntities(getTextNodeContent(node))
@@ -64,6 +71,7 @@ module.exports = {
   decodeHtmlEntities
   delimitCode
   getAttribute
+  noExtraAttributes
   isBlock
   isVoid
 }
