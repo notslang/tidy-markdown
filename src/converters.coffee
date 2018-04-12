@@ -2,7 +2,7 @@ _ = require 'lodash'
 indent = require 'indent'
 {serialize} = require 'parse5'
 
-languageCodeRewrite = require '../lib/language-code-rewrites'
+languageCodeRewrite = require(require.resolve('../lib/language-code-rewrites'))
 treeAdapter = require './tree-adapter'
 {delimitCode, getAttribute, noExtraAttributes, isBlock} = require './utils'
 {
