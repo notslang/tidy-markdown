@@ -21,7 +21,7 @@
     "coffee-script": "^1.12.4",
     "mocha": "^3.2.0",
     "should": "^11.2.0",
-    "standard-format": "^2.2.4"
+    "standard": "^11.0.1"
   },
   "keywords": [
     "markdown",
