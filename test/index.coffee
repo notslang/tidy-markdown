@@ -419,6 +419,27 @@ describe 'code blocks', ->
       ```
     ''')
 
+  it 'should not add list marker escapes to code', ->
+    tidyMdSnippet('''
+      ```
+      Shape of data tensor: (2575, 233)
+      Shape of label tensor: (2575, 3)
+      [[ 0.  1.  0.]
+       [ 0.  0.  1.]
+       [ 0.  1.  0.]
+       [ 0.  1.  0.]]
+      ```
+    ''').should.equal('''
+      ```
+      Shape of data tensor: (2575, 233)
+      Shape of label tensor: (2575, 3)
+      [[ 0.  1.  0.]
+       [ 0.  0.  1.]
+       [ 0.  1.  0.]
+       [ 0.  1.  0.]]
+      ```
+    ''')
+
 # NOTE: the terms "bold" & "italic" here are technically wrong... presentation
 # depends upon the user agent
 describe 'inline grammar', ->
