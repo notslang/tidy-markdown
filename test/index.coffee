@@ -225,6 +225,21 @@ describe 'blockquotes', ->
       > end
     ''')
 
+  it 'should not break up blockquotes', ->
+    tidyMdSnippet('''
+      > Thank you for attending the \_\_\_\_\_\_ hackathon! Lets go over the rules:
+      >
+      > - rule 1
+      > - rule 2
+      > - rule 3
+    ''').should.equal('''
+      > Thank you for attending the \_\_\_\_\_\_ hackathon! Lets go over the rules:
+      >
+      > - rule 1
+      > - rule 2
+      > - rule 3
+    ''')
+
 describe 'lists', ->
   it 'should normalize unordered lists', ->
     tidyMdSnippet('''
