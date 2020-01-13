@@ -7,7 +7,7 @@ yaml = require 'js-yaml'
 converters = require './converters'
 treeAdapter = require './tree-adapter'
 {cleanText, decodeHtmlEntities, isBlock, isVoid} = require './utils'
-
+  
 {
   createElement
   detachNode

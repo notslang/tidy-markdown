@@ -18,7 +18,7 @@
     "wcwidth": "^1.0.1"
   },
   "devDependencies": {
-    "coffee-script": "^1.12.4",
+    "coffeescript": "^2.5.0",
     "mocha": "^3.2.0",
     "should": "^11.2.0",
     "standard": "^11.0.1"
@@ -36,5 +36,7 @@
   "scripts": {
     "test": "make test"
   },
-  "files": [ "lib/*" ]
+  "files": [
+    "lib/*"
+  ]
 }
