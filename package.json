@@ -35,5 +35,6 @@
   "repository": "git://github.com/slang800/tidy-markdown.git",
   "scripts": {
     "test": "make test"
-  }
+  },
+  "files": [ "lib/*" ]
 }
