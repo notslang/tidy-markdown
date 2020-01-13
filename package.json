@@ -14,11 +14,11 @@
     "js-yaml": "^3.8.2",
     "lodash": "^4.17.4",
     "marked": "0.3.3",
-    "parse5": "^3.0.2",
+    "parse5": "^5.1.1",
     "wcwidth": "^1.0.1"
   },
   "devDependencies": {
-    "coffee-script": "^1.12.4",
+    "coffeescript": "^2.5.0",
     "mocha": "^3.2.0",
     "should": "^11.2.0",
     "standard": "^11.0.1"
@@ -35,5 +35,8 @@
   "repository": "git://github.com/slang800/tidy-markdown.git",
   "scripts": {
     "test": "make test"
-  }
+  },
+  "files": [
+    "lib/*"
+  ]
 }

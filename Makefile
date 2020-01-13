@@ -10,8 +10,7 @@ lib/%.js: src/%.coffee
 	# ignore cases where standard returns a non-zero exit code
 	echo "'use_strict'" \
 	| cat - "$<" \
-	| ./node_modules/.bin/coffee -b -c -s \
-	| ./node_modules/.bin/standard --fix --stdin > "$@" || true
+	| npx coffee -b -c -s > "$@"
 
 build: $(patsubst src/%.coffee, lib/%.js, $(wildcard src/*.coffee)) \
        $(patsubst src/%, lib/%, $(wildcard src/*.json))
